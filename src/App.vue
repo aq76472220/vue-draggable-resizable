@@ -20,8 +20,3 @@ export default {
 }
 </script>
 
-<style>
-  .vdr {
-    border: 1px dashed black;
-  }
-</style>

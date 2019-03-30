@@ -67,7 +67,7 @@ export default {
     },
     className: {
       type: String,
-      default: 'vdr'
+      default: 'ss-vdr'
     },
     classNameDraggable: {
       type: String,
@@ -91,7 +91,7 @@ export default {
     },
     classNameHandle: {
       type: String,
-      default: 'handle'
+      default: 'ss-handle'
     },
     disableUserSelect: {
       type: Boolean,
@@ -171,7 +171,6 @@ export default {
       default: () => ['tl', 'tm', 'tr', 'mr', 'br', 'bm', 'bl', 'ml'],
       validator: (val) => {
         const s = new Set(['tl', 'tm', 'tr', 'mr', 'br', 'bm', 'bl', 'ml'])
-
         return new Set(val.filter(h => s.has(h))).size === val.length
       }
     },
