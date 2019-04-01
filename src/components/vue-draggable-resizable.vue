@@ -61,9 +61,9 @@ export default {
   replace: true,
   name: 'vue-draggable-resizable',
   props: {
-    itemData: {  // 默认的数据
+    itemData: {
       type: Object,
-      default: {}
+      default: null
     },
     debug: {
       type: Boolean,
