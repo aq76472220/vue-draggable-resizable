@@ -61,6 +61,10 @@ export default {
   replace: true,
   name: 'vue-draggable-resizable',
   props: {
+    itemData: {  // 默认的数据
+      type: Object,
+      default: {}
+    },
     debug: {
       type: Boolean,
       default: false
@@ -348,8 +352,8 @@ export default {
         if (!this.enabled) {
           this.enabled = true
 
-          this.$emit('activated')
-          this.$emit('update:active', true)
+          this.$emit('activated', this.itemData)
+          this.$emit('update:active', true, this.itemData)
         }
 
         if (this.draggable) {
@@ -392,8 +396,8 @@ export default {
         if (this.enabled && !this.preventDeactivation) {
           this.enabled = false
 
-          this.$emit('deactivated')
-          this.$emit('update:active', false)
+          this.$emit('deactivated', this.itemData)
+          this.$emit('update:active', false, this.itemData)
         }
 
         removeEvent(document.documentElement, eventsFor.move, this.handleMove)
@@ -561,7 +565,7 @@ export default {
       this.rawLeft = mouseClickPosition.left - deltaX
       this.rawRight = mouseClickPosition.right + deltaX
 
-      this.$emit('dragging', this.left, this.top)
+      this.$emit('dragging', this.left, this.top, this.itemData)
     },
     handleMove (e) {
       const handle = this.handle
@@ -586,7 +590,7 @@ export default {
         this.rawLeft = mouseClickPosition.left - deltaX
       }
 
-      this.$emit('resizing', this.left, this.top, this.width, this.height)
+      this.$emit('resizing', this.left, this.top, this.width, this.height, this.itemData)
     },
     handleUp (e) {
       this.handle = null
@@ -600,11 +604,11 @@ export default {
 
       if (this.resizing) {
         this.resizing = false
-        this.$emit('resizestop', this.left, this.top, this.width, this.height)
+        this.$emit('resizestop', this.left, this.top, this.width, this.height, this.itemData)
       }
       if (this.dragging) {
         this.dragging = false
-        this.$emit('dragstop', this.left, this.top)
+        this.$emit('dragstop', this.left, this.top, this.itemData)
       }
 
       removeEvent(document.documentElement, eventsFor.move, this.handleMove)
@@ -655,9 +659,9 @@ export default {
       this.enabled = val
 
       if (val) {
-        this.$emit('activated')
+        this.$emit('activated', this.itemData)
       } else {
-        this.$emit('deactivated')
+        this.$emit('deactivated', this.itemData)
       }
     },
     z (val) {
