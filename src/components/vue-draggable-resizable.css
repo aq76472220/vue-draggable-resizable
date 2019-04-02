@@ -5,8 +5,8 @@
 .ss-handle-tl {top:-6px;left:-6px;cursor:nw-resize;}
 .ss-handle-tm {top:-6px;left:50%;margin-left:-3px;cursor:n-resize;}
 .ss-handle-tr {top:-6px;right:-6px;cursor:ne-resize;}
-.ss-handle-ml {top:50%;margin-top:-6px;left:-6px;cursor:w-resize;}
-.ss-handle-mr {top:50%;margin-top:-6px;right:-6px;cursor:e-resize;}
+.ss-handle-ml {top:50%;margin-top:-3px;left:-6px;cursor:w-resize;}
+.ss-handle-mr {top:50%;margin-top:-3px;right:-6px;cursor:e-resize;}
 .ss-handle-bl {bottom:-6px;left:-6px;cursor:sw-resize;}
 .ss-handle-bm {bottom:-6px;left:50%;margin-left:-3px;cursor:s-resize;}
 .ss-handle-br {bottom:-6px;right:-6px;cursor:se-resize;}
