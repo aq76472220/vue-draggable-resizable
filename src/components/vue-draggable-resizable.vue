@@ -542,6 +542,7 @@ export default {
       return limits
     },
     move (e) {
+      e.preventDefault();
       if (this.resizing) {
         this.handleMove(e)
       } else if (this.dragging) {
