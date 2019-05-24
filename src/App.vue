@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div style="height: 500px; width: 500px; border: 1px solid red; position: relative;">
-      <vue-draggable-resizable :w="400" :h="400" :parent="true" :debug="false" :min-width="200" :min-height="200">
+      <vue-draggable-resizable :w="200" :h="200" :parent="true" :debug="false">
         <p>vue-draggable-resizable</p>
       </vue-draggable-resizable>
     </div>

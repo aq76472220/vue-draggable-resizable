@@ -27,7 +27,6 @@
 
 <script>
   import { matchesSelectorToParentElements, addEvent, removeEvent } from '../utils/dom'
-
   const events = {
     mouse: {
       start: 'mousedown',
@@ -217,23 +216,17 @@
         rawTop: this.y,
         rawRight: null,
         rawBottom: null,
-
         left: this.x,
         top: this.y,
         right: null,
         bottom: null,
-
         aspectFactor: this.w / this.h,
-
         parentWidth: null,
         parentHeight: null,
-
         minW: this.minWidth,
         minH: this.minHeight,
-
         maxW: this.maxWidth,
         maxH: this.maxHeight,
-
         handle: null,
         enabled: this.active,
         resizing: false,
@@ -247,22 +240,17 @@
       if (this.maxWidth && this.minWidth > this.maxWidth) console.warn('[Vdr warn]: Invalid prop: minWidth cannot be greater than maxWidth')
       // eslint-disable-next-line
       if (this.maxWidth && this.minHeight > this.maxHeight) console.warn('[Vdr warn]: Invalid prop: minHeight cannot be greater than maxHeight')
-
       this.resetBoundsAndMouseState()
     },
     mounted: function () {
       if (!this.enableNativeDrag) {
         this.$el.ondragstart = () => false
       }
-
       [this.parentWidth, this.parentHeight] = this.getParentSize()
-
       this.rawRight = this.parentWidth - this.rawWidth - this.rawLeft
       this.rawBottom = this.parentHeight - this.rawHeight - this.rawTop
-
       addEvent(document.documentElement, 'mousedown', this.deselect)
       addEvent(document.documentElement, 'touchend touchcancel', this.deselect)
-
       addEvent(window, 'resize', this.checkParentSize)
     },
     beforeDestroy: function () {
@@ -272,14 +260,12 @@
       removeEvent(document.documentElement, 'touchmove', this.move)
       removeEvent(document.documentElement, 'mouseup', this.handleUp)
       removeEvent(document.documentElement, 'touchend touchcancel', this.deselect)
-
       removeEvent(window, 'resize', this.checkParentSize)
     },
 
     methods: {
       resetBoundsAndMouseState () {
         this.mouseClickPosition = { mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0 }
-
         this.bounds = {
           minLeft: null,
           maxLeft: null,
@@ -294,44 +280,34 @@
       checkParentSize () {
         if (this.parent) {
           const [newParentWidth, newParentHeight] = this.getParentSize()
-
           const deltaX = this.parentWidth - newParentWidth
           const deltaY = this.parentHeight - newParentHeight
-
           this.rawRight -= deltaX
           this.rawBottom -= deltaY
-
           this.parentWidth = newParentWidth
           this.parentHeight = newParentHeight
         }
       },
       getParentSize () {
         const parent = this.parent
-
         if (parent === true) {
           const style = window.getComputedStyle(this.$el.parentNode, null)
-
           return [
             parseInt(style.getPropertyValue('width'), 10),
             parseInt(style.getPropertyValue('height'), 10)
           ]
         }
-
         if (typeof parent === 'string') {
           const parentNode = document.querySelector(parent)
-
           if (!(parentNode instanceof HTMLElement)) {
             throw new Error(`The selector ${parent} does not match any element`)
           }
-
           return [parentNode.offsetWidth, parentNode.offsetHeight]
         }
-
         return [null, null]
       },
       elementTouchDown (e) {
         eventsFor = events.touch
-
         this.elementDown(e)
       },
       elementDown (e) {
@@ -341,37 +317,29 @@
           if (this.onDragStart && this.onDragStart(e) === false) {
             return
           }
-
           if (
             (this.dragHandle && !matchesSelectorToParentElements(target, this.dragHandle, this.$el)) ||
             (this.dragCancel && matchesSelectorToParentElements(target, this.dragCancel, this.$el))
           ) {
             return
           }
-
           if (!this.enabled) {
             this.enabled = true
-
             this.$emit('activated', this.itemData)
             this.$emit('update:active', true, this.itemData)
           }
-
           if (this.draggable) {
             this.dragging = true
           }
-
           this.mouseClickPosition.mouseX = e.touches ? e.touches[0].pageX : e.pageX
           this.mouseClickPosition.mouseY = e.touches ? e.touches[0].pageY : e.pageY
-
           this.mouseClickPosition.left = this.left
           this.mouseClickPosition.right = this.right
           this.mouseClickPosition.top = this.top
           this.mouseClickPosition.bottom = this.bottom
-
           if (this.parent) {
             this.bounds = this.calcDragLimits()
           }
-
           addEvent(document.documentElement, eventsFor.move, this.move)
           addEvent(document.documentElement, eventsFor.stop, this.handleUp)
         }
@@ -391,32 +359,25 @@
       deselect (e) {
         const target = e.target || e.srcElement
         const regex = new RegExp(this.className + '-([trmbl]{2})', '')
-
         if (!this.$el.contains(target) && !regex.test(target.className)) {
           if (this.enabled && !this.preventDeactivation) {
             this.enabled = false
-
             this.$emit('deactivated', this.itemData)
             this.$emit('update:active', false, this.itemData)
           }
-
           removeEvent(document.documentElement, eventsFor.move, this.handleMove)
         }
-
         this.resetBoundsAndMouseState()
       },
       handleTouchDown (handle, e) {
         eventsFor = events.touch
-
         this.handleDown(handle, e)
       },
       handleDown (handle, e) {
         if (this.onResizeStart && this.onResizeStart(handle, e) === false) {
           return
         }
-
         if (e.stopPropagation) e.stopPropagation()
-
         // Here we avoid a dangerous recursion by faking
         // corner handles as middle handles
         if (this.lockAspectRatio && !handle.includes('m')) {
@@ -424,18 +385,14 @@
         } else {
           this.handle = handle
         }
-
         this.resizing = true
-
         this.mouseClickPosition.mouseX = e.touches ? e.touches[0].pageX : e.pageX
         this.mouseClickPosition.mouseY = e.touches ? e.touches[0].pageY : e.pageY
         this.mouseClickPosition.left = this.left
         this.mouseClickPosition.right = this.right
         this.mouseClickPosition.top = this.top
         this.mouseClickPosition.bottom = this.bottom
-
         this.bounds = this.calcResizeLimits()
-
         addEvent(document.documentElement, eventsFor.move, this.handleMove)
         addEvent(document.documentElement, eventsFor.stop, this.handleUp)
       },
@@ -444,7 +401,6 @@
         let minH = this.minH
         let maxW = this.maxW
         let maxH = this.maxH
-
         const aspectFactor = this.aspectFactor
         const [gridX, gridY] = this.grid
         const width = this.width
@@ -453,14 +409,12 @@
         const top = this.top
         const right = this.right
         const bottom = this.bottom
-
         if (this.lockAspectRatio) {
           if (minW / minH > aspectFactor) {
             minH = minW / aspectFactor
           } else {
             minW = aspectFactor * minH
           }
-
           if (maxW && maxH) {
             maxW = Math.min(maxW, aspectFactor * maxH)
             maxH = Math.min(maxH, maxW / aspectFactor)
@@ -470,10 +424,8 @@
             maxW = aspectFactor * maxH
           }
         }
-
         maxW = maxW - (maxW % gridX)
         maxH = maxH - (maxH % gridY)
-
         const limits = {
           minLeft: null,
           maxLeft: null,
@@ -520,17 +472,14 @@
           limits.maxRight = right + Math.floor((width - minW) / gridX) * gridX
           limits.minBottom = null
           limits.maxBottom = bottom + Math.floor((height - minH) / gridY) * gridY
-
           if (maxW) {
             limits.minLeft = -(right + maxW)
             limits.minRight = -(left + maxW)
           }
-
           if (maxH) {
             limits.minTop = -(bottom + maxH)
             limits.minBottom = -(top + maxH)
           }
-
           if (this.lockAspectRatio && (maxW && maxH)) {
             limits.minLeft = Math.min(limits.minLeft, -(right + maxW))
             limits.minTop = Math.min(limits.minTop, -(maxH + bottom))
@@ -538,7 +487,6 @@
             limits.minBottom = Math.min(limits.minBottom, -top - maxH)
           }
         }
-
         return limits
       },
       move (e) {
@@ -553,56 +501,42 @@
         const axis = this.axis
         const grid = this.grid
         const mouseClickPosition = this.mouseClickPosition
-
         const tmpDeltaX = axis && axis !== 'y' ? mouseClickPosition.mouseX - (e.touches ? e.touches[0].pageX : e.pageX) : 0
         const tmpDeltaY = axis && axis !== 'x' ? mouseClickPosition.mouseY - (e.touches ? e.touches[0].pageY : e.pageY) : 0
-
         const [deltaX, deltaY] = this.snapToGrid(this.grid, tmpDeltaX, tmpDeltaY)
-
         if (!deltaX && !deltaY) return
-
         this.rawTop = mouseClickPosition.top - deltaY
         this.rawBottom = mouseClickPosition.bottom + deltaY
         this.rawLeft = mouseClickPosition.left - deltaX
         this.rawRight = mouseClickPosition.right + deltaX
-
         this.$emit('dragging', this.left, this.top, this.itemData)
       },
       handleMove (e) {
         const handle = this.handle
         const mouseClickPosition = this.mouseClickPosition
-
         const tmpDeltaX = mouseClickPosition.mouseX - (e.touches ? e.touches[0].pageX : e.pageX)
         const tmpDeltaY = mouseClickPosition.mouseY - (e.touches ? e.touches[0].pageY : e.pageY)
-
         const [deltaX, deltaY] = this.snapToGrid(this.grid, tmpDeltaX, tmpDeltaY)
-
         if (!deltaX && !deltaY) return
-
         if (handle.includes('b')) {
           this.rawBottom = mouseClickPosition.bottom + deltaY
         } else if (handle.includes('t')) {
           this.rawTop = mouseClickPosition.top - deltaY
         }
-
         if (handle.includes('r')) {
           this.rawRight = mouseClickPosition.right + deltaX
         } else if (handle.includes('l')) {
           this.rawLeft = mouseClickPosition.left - deltaX
         }
-
         this.$emit('resizing', this.left, this.top, this.width, this.height, this.itemData)
       },
       handleUp (e) {
         this.handle = null
-
         this.resetBoundsAndMouseState()
-
         this.rawTop = this.top
         this.rawBottom = this.bottom
         this.rawLeft = this.left
         this.rawRight = this.right
-
         if (this.resizing) {
           this.resizing = false
           this.$emit('resizestop', this.left, this.top, this.width, this.height, this.itemData)
@@ -611,13 +545,11 @@
           this.dragging = false
           this.$emit('dragstop', this.left, this.top, this.itemData)
         }
-
         removeEvent(document.documentElement, eventsFor.move, this.handleMove)
       },
       snapToGrid (grid, pendingX, pendingY) {
         const x = Math.round(pendingX / grid[0]) * grid[0]
         const y = Math.round(pendingY / grid[1]) * grid[1]
-
         return [x, y]
       }
     },
@@ -676,17 +608,14 @@
         const lockAspectRatio = this.lockAspectRatio
         const left = this.left
         const top = this.top
-
         if (bounds.minLeft !== null && newLeft < bounds.minLeft) {
           newLeft = bounds.minLeft
         } else if (bounds.maxLeft !== null && bounds.maxLeft < newLeft) {
           newLeft = bounds.maxLeft
         }
-
         if (lockAspectRatio && this.resizingOnX) {
           this.rawTop = top - (left - newLeft) / aspectFactor
         }
-
         this.left = newLeft
       },
       rawRight (newRight) {
@@ -695,17 +624,14 @@
         const lockAspectRatio = this.lockAspectRatio
         const right = this.right
         const bottom = this.bottom
-
         if (bounds.minRight !== null && newRight < bounds.minRight) {
           newRight = bounds.minRight
         } else if (bounds.maxRight !== null && bounds.maxRight < newRight) {
           newRight = bounds.maxRight
         }
-
         if (lockAspectRatio && this.resizingOnX) {
           this.rawBottom = bottom - (right - newRight) / aspectFactor
         }
-
         this.right = newRight
       },
       rawTop (newTop) {
@@ -714,17 +640,14 @@
         const lockAspectRatio = this.lockAspectRatio
         const left = this.left
         const top = this.top
-
         if (bounds.minTop !== null && newTop < bounds.minTop) {
           newTop = bounds.minTop
         } else if (bounds.maxTop !== null && bounds.maxTop < newTop) {
           newTop = bounds.maxTop
         }
-
         if (lockAspectRatio && this.resizingOnY) {
           this.rawLeft = left - (top - newTop) * aspectFactor
         }
-
         this.top = newTop
       },
       rawBottom (newBottom) {
@@ -733,30 +656,24 @@
         const lockAspectRatio = this.lockAspectRatio
         const right = this.right
         const bottom = this.bottom
-
         if (bounds.minBottom !== null && newBottom < bounds.minBottom) {
           newBottom = bounds.minBottom
         } else if (bounds.maxBottom !== null && bounds.maxBottom < newBottom) {
           newBottom = bounds.maxBottom
         }
-
         if (lockAspectRatio && this.resizingOnY) {
           this.rawRight = right - (bottom - newBottom) * aspectFactor
         }
-
         this.bottom = newBottom
       },
       x () {
         if (this.resizing || this.dragging) {
           return
         }
-
         if (this.parent) {
           this.bounds = this.calcDragLimits()
         }
-
         const delta = this.x - this.left
-
         if (delta % this.grid[0] === 0) {
           this.rawLeft = this.x
           this.rawRight = this.right - delta
@@ -766,13 +683,10 @@
         if (this.resizing || this.dragging) {
           return
         }
-
         if (this.parent) {
           this.bounds = this.calcDragLimits()
         }
-
         const delta = this.y - this.top
-
         if (delta % this.grid[1] === 0) {
           this.rawTop = this.y
           this.rawBottom = this.bottom - delta
@@ -805,13 +719,10 @@
         if (this.resizing || this.dragging) {
           return
         }
-
         if (this.parent) {
           this.bounds = this.calcResizeLimits()
         }
-
         const delta = this.width - this.w
-
         if (delta % this.grid[0] === 0) {
           this.rawRight = this.right + delta
         }
@@ -820,11 +731,9 @@
         if (this.resizing || this.dragging) {
           return
         }
-
         if (this.parent) {
           this.bounds = this.calcResizeLimits()
         }
-
         const delta = this.height - this.h
 
         if (delta % this.grid[1] === 0) {
