@@ -3,13 +3,16 @@
     <div style="height: 500px; width: 500px; border: 1px solid red; position: relative;">
       <vue-draggable-resizable
         ref = 'resizable'
-        :w="200"
-        :h="200"
+        :x="left"
+        :y="top"
+        :w="width"
+        :h="height"
         :parent="true"
         :debug="true"
         @dragging = "onDragging"
         @resizing = 'onResizing'
       >
+        <div>1322</div>
       </vue-draggable-resizable>
 
       <div>
@@ -40,7 +43,7 @@ export default {
       left: 0,
       width: 0,
       height: 0,
-      list: [{isClick: 0},{isClick: 0},{isClick: 0},{isClick: 0},{isClick: 0}]
+      list: [{isClick: 0, width: 150, height: 150, left: 10, top: 20},{isClick: 0, width: 120, height: 110, left: 30, top: 30}]
     }
   },
   computed: {
@@ -68,16 +71,21 @@ export default {
       this.width = width
       this.height = height
     },
-    componentClickHandle (e,index) { // 点击某个元素发生的事情 
+    componentClickHandle (e,index) { // 点击某个元素发生的事情
       var list = this.list
       for (let v of list){
         console.log(v)
         v.isClick = 0
       }
+
+      this.left = list[index].left
+      this.top = list[index].top
+      this.width = list[index].width
+      this.height = list[index].height
+
       list[index].isClick = 1
       this.list = list
       console.log(this.list)
-      this.$refs.resizable.elementDown(e)
     }
   }
 }

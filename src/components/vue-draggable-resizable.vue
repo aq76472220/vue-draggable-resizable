@@ -10,17 +10,18 @@
     }, className]"
     @mousedown="elementDown"
   >
-    <div>
+
+      <!--:style="{display: enabled ? 'block' : 'none'}"-->
       <div
         v-for="handle in actualHandles"
         :key="handle"
         :class="[classNameHandle, classNameHandle + '-' + handle]"
-        :style="{display: enabled ? 'block' : 'none'}"
+
         @mousedown.stop.prevent="handleDown(handle, $event)"
       >
         <slot :name="handle"></slot>
       </div>
-    </div>
+ 
     <slot></slot>
   </div>
 </template>
@@ -127,12 +128,12 @@
       w: {
         type: Number,
         default: 200,
-        validator: (val) => val > 0
+        validator: (val) => val >= 0
       },
       h: {
         type: Number,
         default: 200,
-        validator: (val) => val > 0
+        validator: (val) => val >= 0
       },
       minWidth: {
         type: Number,
