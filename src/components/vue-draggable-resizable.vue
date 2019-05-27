@@ -9,17 +9,17 @@
       [classNameResizable]: resizable
     }, className]"
     @mousedown="elementDown"
-    @touchstart="elementTouchDown"
   >
-    <div
-      v-for="handle in actualHandles"
-      :key="handle"
-      :class="[classNameHandle, classNameHandle + '-' + handle]"
-      :style="{display: enabled ? 'block' : 'none'}"
-      @mousedown.stop.prevent="handleDown(handle, $event)"
-      @touchstart.stop.prevent="handleTouchDown(handle, $event)"
-    >
-      <slot :name="handle"></slot>
+    <div>
+      <div
+        v-for="handle in actualHandles"
+        :key="handle"
+        :class="[classNameHandle, classNameHandle + '-' + handle]"
+        :style="{display: enabled ? 'block' : 'none'}"
+        @mousedown.stop.prevent="handleDown(handle, $event)"
+      >
+        <slot :name="handle"></slot>
+      </div>
     </div>
     <slot></slot>
   </div>
@@ -120,7 +120,7 @@
         type: Boolean,
         default: true
       },
-      lockAspectRatio: {
+      lockAspectRatio: { // 是否锁住长宽
         type: Boolean,
         default: false
       },
@@ -190,7 +190,7 @@
         default: 'both',
         validator: (val) => ['x', 'y', 'both'].includes(val)
       },
-      grid: {
+      grid: { // 网格
         type: Array,
         default: () => [1, 1]
       },
@@ -220,9 +220,9 @@
         top: this.y,
         right: null,
         bottom: null,
-        aspectFactor: this.w / this.h,
-        parentWidth: null,
-        parentHeight: null,
+        aspectFactor: this.w / this.h, // 宽度和长度比例关系
+        parentWidth: null, // 父级元素的宽度
+        parentHeight: null, // 父级元素的高度
         minW: this.minWidth,
         minH: this.minHeight,
         maxW: this.maxWidth,
@@ -306,10 +306,6 @@
         }
         return [null, null]
       },
-      elementTouchDown (e) {
-        eventsFor = events.touch
-        this.elementDown(e)
-      },
       elementDown (e) {
         const target = e.target || e.srcElement
 
@@ -368,10 +364,6 @@
           removeEvent(document.documentElement, eventsFor.move, this.handleMove)
         }
         this.resetBoundsAndMouseState()
-      },
-      handleTouchDown (handle, e) {
-        eventsFor = events.touch
-        this.handleDown(handle, e)
       },
       handleDown (handle, e) {
         if (this.onResizeStart && this.onResizeStart(handle, e) === false) {
@@ -436,7 +428,6 @@
           minBottom: null,
           maxBottom: null
         }
-
         if (this.parent) {
           limits.minLeft = (this.parentWidth + left) % gridX
           limits.maxLeft = left + Math.floor((width - minW) / gridX) * gridX
@@ -446,17 +437,14 @@
           limits.maxRight = right + Math.floor((width - minW) / gridX) * gridX
           limits.minBottom = (this.parentHeight + bottom) % gridY
           limits.maxBottom = bottom + Math.floor((height - minH) / gridY) * gridY
-
           if (maxW) {
             limits.minLeft = Math.max(limits.minLeft, this.parentWidth - right - maxW)
             limits.minRight = Math.max(limits.minRight, this.parentWidth - left - maxW)
           }
-
           if (maxH) {
             limits.minTop = Math.max(limits.minTop, this.parentHeight - bottom - maxH)
             limits.minBottom = Math.max(limits.minBottom, this.parentHeight - top - maxH)
           }
-
           if (this.lockAspectRatio) {
             limits.minLeft = Math.max(limits.minLeft, left - top * aspectFactor)
             limits.minTop = Math.max(limits.minTop, top - left / aspectFactor)
@@ -576,13 +564,13 @@
       height () {
         return this.parentHeight - this.top - this.bottom
       },
-      resizingOnX () {
+      resizingOnX () { // 是否是中间横向的拉伸或者缩放
         return (Boolean(this.handle) && (this.handle.includes('l') || this.handle.includes('r')))
       },
-      resizingOnY () {
+      resizingOnY () { // 是否是纵向的拉伸或者收缩
         return (Boolean(this.handle) && (this.handle.includes('t') || this.handle.includes('b')))
       },
-      isCornerHandle () {
+      isCornerHandle () { // 是否拉的是四个拐角
         return (Boolean(this.handle) && ['tl', 'tr', 'br', 'bl'].includes(this.handle))
       }
     },
