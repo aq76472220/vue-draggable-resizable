@@ -42,13 +42,13 @@ export default {
   name: 'app',
   data(){
     return {
-      maxWidth: 100, // 拖拽框的宽度
-      maxHeight: 200, // 拖拽框的高度
+      maxWidth: 200, // 拖拽框的宽度
+      maxHeight: 240, // 拖拽框的高度
       maxTop: 30, //计算最大的top值
       maxLeft: 10, //计算最左边的值
       lsComponentList: [
-        {isClick: 0, width: 150, height: 150, left: 10,x:10, top: 100, y:100 },
-        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30}
+        {isClick: 0, width: 150,  height: 150, left: 10,x:10, top: 100, y:100, pidX: 150/200,  pidY: 150/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240}
       ]
     }
   },
@@ -77,10 +77,15 @@ export default {
       this.lsComponentList = lsComponentList
     },
     onResizing(left, top, width, height){ // 放大缩小的时候
-      this.left = left
-      this.top = top
-      this.width = width
-      this.height = height
+      console.log(height, '???')
+      var lsComponentList = this.lsComponentList
+      for (let v of lsComponentList) {
+        v.left = left-this.maxLeft+ v.x
+        v.top = top-this.maxTop+ v.y
+        v.width =  width * v.pidX
+        v.height =  height * v.pidY
+      }
+      this.lsComponentList = lsComponentList
     },
     // componentClickHandle (e,index) { // 点击某个元素发生的事情
     //   var list = this.list
