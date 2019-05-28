@@ -50,7 +50,7 @@
     "style-loader": "^0.22.1",
     "syn": "^0.5.0",
     "vue": "^2.5.22",
-    "vue-template-compiler": "^2.5.21"
+    "vue-template-compiler": "^2.6.10"
   },
   "files": [
     "/dist/*",
@@ -76,5 +76,8 @@
     "component",
     "dragabble",
     "resizable"
-  ]
+  ],
+  "dependencies": {
+    "vue": "^2.6.10"
+  }
 }

@@ -11,18 +11,18 @@
     @mousedown="elementDown"
   >
 
-      <!--:style="{display: enabled ? 'block' : 'none'}"-->
       <div
         v-for="handle in actualHandles"
         :key="handle"
         :class="[classNameHandle, classNameHandle + '-' + handle]"
-
+        :style="{display: enabled ? 'block' : 'none'}"
         @mousedown.stop.prevent="handleDown(handle, $event)"
       >
         <slot :name="handle"></slot>
       </div>
- 
-    <slot></slot>
+
+      <!--默认插槽-->
+      <slot></slot>
   </div>
 </template>
 
@@ -109,7 +109,7 @@
         type: Boolean,
         default: false
       },
-      active: {
+      active: { // 是否按下选中元素
         type: Boolean,
         default: false
       },
@@ -167,7 +167,7 @@
       },
       z: {
         type: [String, Number],
-        default: 'auto',
+        default: 10000,
         validator: (val) => (typeof val === 'string' ? val === 'auto' : val >= 0)
       },
       handles: {
@@ -309,8 +309,8 @@
       },
       elementDown (e) {
         const target = e.target || e.srcElement
-
         if (this.$el.contains(target)) {
+
           if (this.onDragStart && this.onDragStart(e) === false) {
             return
           }
@@ -556,7 +556,6 @@
       },
       actualHandles () {
         if (!this.resizable) return []
-        console.log(this.handles, '????')
         return this.handles
       },
       width () {

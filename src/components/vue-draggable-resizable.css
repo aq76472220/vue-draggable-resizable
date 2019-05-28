@@ -1,6 +1,6 @@
 .ss-vdr {touch-action:none;position:absolute;box-sizing:border-box;border:1px solid rgba(0,0,0,0);}
 .ss-vdr.active{border:1px dashed black;}
-.ss-vdr:hover{border:1px dashed black;cursor: move}
+.ss-vdr:hover{border:1px solid black;cursor: move}
 .ss-handle {box-sizing:border-box;position:absolute;width:6px;height:6px;background:#fff;border:1px solid #333;}
 .ss-handle-tl {top:-6px;left:-6px;cursor:nw-resize;}
 .ss-handle-tm {top:-6px;left:50%;margin-left:-3px;cursor:n-resize;}
