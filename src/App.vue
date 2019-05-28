@@ -42,10 +42,10 @@ export default {
   name: 'app',
   data(){
     return {
-      maxWidth: 200, // 拖拽框的宽度
-      maxHeight: 240, // 拖拽框的高度
-      maxTop: 30, //计算最大的top值
-      maxLeft: 10, //计算最左边的值
+      maxWidth: 0, // 拖拽框的宽度
+      maxHeight: 0, // 拖拽框的高度
+      maxTop: 0, //计算最大的top值
+      maxLeft: 0, //计算最左边的值
       lsComponentList: [
         {isClick: 0, width: 150,  height: 150, left: 10,x:10, top: 100, y:100, pidX: 150/200,  pidY: 150/240},
         {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240}
@@ -53,6 +53,8 @@ export default {
     }
   },
   mounted(){
+    this._calculateXYWH() // 计算x, y, w, h
+
   },
   computed: {
     style () {
@@ -67,6 +69,23 @@ export default {
     VueDraggableResizable
   },
   methods: {
+    _calculateXYWH(){ // 计算x, y, w, h
+      var _arrX = []
+      var _arrY = []
+      var _arrR = []
+      var _arrB = []
+      var lsComponentList = this.lsComponentList;
+      for (let v of lsComponentList) {
+        _arrX.push(v.left)
+        _arrY.push(v.top)
+        _arrR.push(v.left+v.width)
+        _arrB.push(v.top+v.height)
+      }
+      this.maxLeft = Math.min(..._arrX)
+      this.maxTop = Math.min(..._arrY)
+      this.maxWidth = Math.max(..._arrR)-this.maxLeft
+      this.maxHeight = Math.max(..._arrB)-this.maxTop
+    },
     onDragging(left, top){ // 拖拽移动的时候
       console.log(left, top)
       var lsComponentList = this.lsComponentList
