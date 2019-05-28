@@ -48,7 +48,29 @@ export default {
       maxLeft: 0, //计算最左边的值
       lsComponentList: [
         {isClick: 0, width: 150,  height: 150, left: 10,x:10, top: 100, y:100, pidX: 150/200,  pidY: 150/240},
-        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240}
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 32, y:32, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 34, y:34, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 36, y:36, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 38, y:38, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 40, y:40, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 42, y:42, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 44, y:44, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 46, y:46, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+        {isClick: 0, width: 120, height: 110, left: 30,x:30, top: 30, y:30, pidX: 120/200,  pidY: 110/240},
+
+
+
       ]
     }
   },
@@ -83,11 +105,11 @@ export default {
       }
       this.maxLeft = Math.min(..._arrX)
       this.maxTop = Math.min(..._arrY)
-      this.maxWidth = Math.max(..._arrR)-this.maxLeft
-      this.maxHeight = Math.max(..._arrB)-this.maxTop
+      this.maxWidth = Math.max(..._arrR)-this.maxLeft+2
+      this.maxHeight = Math.max(..._arrB)-this.maxTop+2
     },
     onDragging(left, top){ // 拖拽移动的时候
-      console.log(left, top)
+      console.log(left, this.maxLeft)
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
         v.left = left-this.maxLeft+ v.x

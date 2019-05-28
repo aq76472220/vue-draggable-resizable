@@ -498,7 +498,10 @@
         this.rawBottom = mouseClickPosition.bottom + deltaY
         this.rawLeft = mouseClickPosition.left - deltaX
         this.rawRight = mouseClickPosition.right + deltaX
-        this.$emit('dragging', this.left, this.top, this.itemData)
+        setTimeout(()=>{ // 定时器解决这个问题奇葩
+          this.$emit('dragging', this.left, this.top, this.itemData)
+        },10)
+
       },
       handleMove (e) {
         const handle = this.handle
