@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div style="height: 500px; width: 500px; border: 1px solid red; position: relative;">
+    <div style="height: 800px; width: 800px; border: 1px solid red; position: relative;">
       <vue-draggable-resizable
         ref = 'resizable'
         :x="x"
@@ -91,7 +91,6 @@ export default {
         }
       }
 
-
       this.maxLeft = this.x = Math.min(..._arrX)
       this.maxTop = this.y = Math.min(..._arrY)
       this.maxWidth = this.w = Math.max(..._arrR)-this.maxLeft+2
@@ -116,8 +115,8 @@ export default {
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
         if(v.isSelect){ // 被选中才移动
-          v.left = width - (width * v.pidW+ v.diffR)
-          v.top = height - (height * v.pidH+ v.diffB)  
+          v.left = width * v.pidX + this.x
+          v.top = height * v.pidY + this.y
           v.width = width * v.pidW
           v.height = height * v.pidH
         }
@@ -140,8 +139,8 @@ export default {
       for (let v of lsComponentList) {
         v.pidW = v.width/this.w
         v.pidH = v.height/this.h
-        v.diffR = this.w - (v.width+v.left)
-        v.diffB = this.h - (v.height+v.top)
+        v.pidX = (v.left - this.x)/this.w
+        v.pidY= (v.top - this.y)/this.h
       }
 
     }
