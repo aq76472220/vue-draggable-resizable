@@ -24,9 +24,13 @@
         >我是元素{{index}}
         </div>
       </div>
-
-
     </div>
+    <ul>
+      <li @click="onPositonHandle('left')">左</li>
+      <li @click="onPositonHandle('top')">上</li>
+      <li @click="onPositonHandle('right')">右</li>
+      <li @click="onPositonHandle('bottom')">下</li>
+    </ul>
   </div>
 </template>
 
@@ -107,8 +111,6 @@ export default {
       this.lsComponentList = lsComponentList
       this.x = left
       this.y = top
-
-
     },
     onResizing(left, top, width, height){ // 放大缩小的时候
       console.log(left, top)
@@ -142,7 +144,19 @@ export default {
         v.pidX = (v.left - this.x)/this.w
         v.pidY= (v.top - this.y)/this.h
       }
+    },
 
+    onPositonHandle (type) { // 位置信息
+      var lsComponentList = this.lsComponentList
+      switch (type) {
+        case 'left':
+            for (let v of lsComponentList){
+              v.left = this.x
+            }
+          break
+        this.lsComponentList = lsComponentList
+      }
+      this._calculateXYWH() // 重新计算位置
     }
   }
 }
