@@ -108,20 +108,23 @@ export default {
       this.lsComponentList = lsComponentList
       this.x = left
       this.y = top
+
+
     },
     onResizing(left, top, width, height){ // 放大缩小的时候
+      console.log(left, top)
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
         if(v.isSelect){ // 被选中才移动
-          v.left = left-this.maxLeft+ v.x
-          v.top = top-this.maxTop+ v.y
-          v.width =  width * v.pidW
-          v.height =  height * v.pidH
+          v.left = width - (width * v.pidW+ v.diffR)
+          v.top = height - (height * v.pidH+ v.diffB)  
+          v.width = width * v.pidW
+          v.height = height * v.pidH
         }
       }
       this.lsComponentList = lsComponentList
       this.x = left
-      this.t = top
+      this.y = top
       this.w = width
       this.h = height
     },
@@ -137,6 +140,8 @@ export default {
       for (let v of lsComponentList) {
         v.pidW = v.width/this.w
         v.pidH = v.height/this.h
+        v.diffR = this.w - (v.width+v.left)
+        v.diffB = this.h - (v.height+v.top)
       }
 
     }

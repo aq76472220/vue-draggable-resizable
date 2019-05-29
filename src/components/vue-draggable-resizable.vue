@@ -10,19 +10,18 @@
     }, className]"
     @mousedown="elementDown"
   >
+    <div
+      v-for="handle in actualHandles"
+      :key="handle"
+      :class="[classNameHandle, classNameHandle + '-' + handle]"
+      :style="{display: enabled ? 'block' : 'none'}"
+      @mousedown.stop.prevent="handleDown(handle, $event)"
+    >
+      <slot :name="handle"></slot>
+    </div>
 
-      <div
-        v-for="handle in actualHandles"
-        :key="handle"
-        :class="[classNameHandle, classNameHandle + '-' + handle]"
-        :style="{display: enabled ? 'block' : 'none'}"
-        @mousedown.stop.prevent="handleDown(handle, $event)"
-      >
-        <slot :name="handle"></slot>
-      </div>
-
-      <!--默认插槽-->
-      <slot></slot>
+    <!--默认插槽-->
+    <slot></slot>
   </div>
 </template>
 
@@ -128,12 +127,27 @@
       w: {
         type: Number,
         default: 0,
-        validator: (val) => val >= 0
+        validator: (val) => typeof val === 'number'
       },
       h: {
         type: Number,
         default: 0,
-        validator: (val) => val >= 0
+        validator: (val) => typeof val === 'number'
+      },
+      x: {
+        type: Number,
+        default: 0,
+        validator: (val) => typeof val === 'number'
+      },
+      y: {
+        type: Number,
+        default: 0,
+        validator: (val) => typeof val === 'number'
+      },
+      z: {
+        type: [String, Number],
+        default: 10000,
+        validator: (val) => (typeof val === 'string' ? val === 'auto' : val >= 0)
       },
       minWidth: {
         type: Number,
@@ -154,21 +168,6 @@
         type: Number,
         default: null,
         validator: (val) => val >= 0
-      },
-      x: {
-        type: Number,
-        default: 0,
-        validator: (val) => typeof val === 'number'
-      },
-      y: {
-        type: Number,
-        default: 0,
-        validator: (val) => typeof val === 'number'
-      },
-      z: {
-        type: [String, Number],
-        default: 10000,
-        validator: (val) => (typeof val === 'string' ? val === 'auto' : val >= 0)
       },
       handles: {
         type: Array,
