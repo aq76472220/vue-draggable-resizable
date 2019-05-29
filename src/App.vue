@@ -131,11 +131,23 @@ export default {
       this.h = height
     },
     onResizstop (left, top, width, height) { // 拖拽结束后
-
+      console.log(left, '拖拽结束了吗？？？？')
       this.maxLeft = left
       this.maxTop = top
       this.maxWidth = width
       this.maxHeight = height
+      
+      this._calculateXYWH()
+      var lsComponentList = this.lsComponentList
+      for (let v of lsComponentList) {
+        v.pidW = v.width/this.w
+        v.pidH = v.height/this.h
+        v.pidX = (v.left - this.x)/this.w
+        v.pidY= (v.top - this.y)/this.h
+      }
+
+
+
     },
     componentItemClickHandle(index) { // 点击某个元素发生的事情
       var lsComponentList = this.lsComponentList
