@@ -127,12 +127,12 @@
       },
       w: {
         type: Number,
-        default: 200,
+        default: 0,
         validator: (val) => val >= 0
       },
       h: {
         type: Number,
-        default: 200,
+        default: 0,
         validator: (val) => val >= 0
       },
       minWidth: {
