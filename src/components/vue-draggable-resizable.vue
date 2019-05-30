@@ -499,7 +499,7 @@
         this.rawRight = mouseClickPosition.right + deltaX
         setTimeout(()=>{ // 定时器解决这个问题奇葩
           this.$emit('dragging', this.left, this.top, this.itemData)
-        },10)
+        },5)
 
       },
       handleMove (e) {

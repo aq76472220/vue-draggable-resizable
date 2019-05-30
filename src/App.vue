@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div style="height: 800px; width: 800px; border: 1px solid red; position: relative;">
+    <div style="height: 400px; width: 800px; border: 1px solid red; position: relative;">
       <vue-draggable-resizable
         ref = 'resizable'
         :x="x"
@@ -14,19 +14,17 @@
         @resizestop = "onResizstop"
       >
       </vue-draggable-resizable>
-
-
       <div v-for="(item, index) in lsComponentList">
         <div
           class="componentItem"
-          :style="{top: item.top+'px', left: item.left+'px', width:item.width+'px', height:item.height+'px'}"
+          :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px'}"
           :class="{componentItem_border: item.isSelect}"
           @click="componentItemClickHandle(index)"
         >我是元素{{index}}
         </div>
       </div>
     </div>
-    <ul>
+    <ul class="ss-ul-box">
       <li @click="onPositonHandle('left')">左</li>
       <li @click="onPositonHandle('top')">上</li>
       <li @click="onPositonHandle('right')">右</li>
@@ -58,9 +56,16 @@ export default {
       maxTop: 0, //计算最大的top值
       maxLeft: 0, //计算最左边的值
       lsComponentList: [
-        {isSelect: 0, width: 150,  height: 150, left: 10, top: 100},
-        {isSelect: 0, width: 120, height: 110, left: 30, top: 32},
-        {isSelect: 0, width: 120, height: 110, left: 30, top: 34},
+        {isSelect: 0,
+          css: {
+            width: 150,  height: 150, x: 10, y: 100
+          }
+         },
+        {isSelect: 0,
+          css: {
+            width: 150,  height: 150, x: 10, y: 100
+          }
+        }
       ]
     }
   },
@@ -69,13 +74,7 @@ export default {
 
   },
   computed: {
-    style () {
-      return {
-        position: 'absolute',
-        top: this.top + 'px',
-        left: this.left + 'px',
-      }
-    },
+
   },
   components: {
     VueDraggableResizable
@@ -89,24 +88,37 @@ export default {
       var lsComponentList = this.lsComponentList;
       for (let v of lsComponentList) {
         if(v.isSelect){
-          _arrX.push(v.left)
-          _arrY.push(v.top)
-          _arrR.push(v.left+v.width)
-          _arrB.push(v.top+v.height)
+          _arrX.push(v.css.x)
+          _arrY.push(v.css.y)
+          _arrR.push(v.css.x+v.css.width)
+          _arrB.push(v.css.y+v.css.height)
         }
       }
 
-      this.maxLeft = this.x = Math.min(..._arrX)
-      this.maxTop = this.y = Math.min(..._arrY)
-      this.maxWidth = this.w = Math.max(..._arrR)-this.maxLeft+2
-      this.maxHeight = this.h = Math.max(..._arrB)-this.maxTop+2
+      console.log(  _arrX,  Math.floor(Math.min(..._arrX)), '???')
+
+      this.maxLeft = this.x = Math.floor(Math.min(..._arrX))
+      this.maxTop = this.y = Math.floor(Math.min(..._arrY))
+      this.maxWidth = this.w = Math.floor(Math.max(..._arrR)-this.maxLeft)
+      this.maxHeight = this.h = Math.floor(Math.max(..._arrB)-this.maxTop)
+      for (let v of lsComponentList) {
+        if(v.isSelect){
+          v.pidW = v.css.width/this.w
+          v.pidH = v.css.height/this.h
+          v.pidX = (v.css.x - this.x)/this.w
+          v.pidY = (v.css.y - this.y)/this.h
+        }
+      }
+
+
+
     },
     onDragging(left, top){ // 拖拽移动的时候
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
         if(v.isSelect){ // 被选中才移动
-          v.left = left-this.maxLeft+ v.x
-          v.top = top-this.maxTop+ v.y
+          v.css.x = Math.floor(left + v.x- this.maxLeft)
+          v.css.y = Math.floor(top + v.y - this.maxTop)
         }
       }
       this.lsComponentList = lsComponentList
@@ -118,10 +130,10 @@ export default {
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
         if(v.isSelect){ // 被选中才移动
-          v.left = width * v.pidX + this.x
-          v.top = height * v.pidY + this.y
-          v.width = width * v.pidW
-          v.height = height * v.pidH
+          v.css.x = Math.floor(width * v.pidX + this.x)
+          v.css.y = Math.floor(height * v.pidY + this.y)
+          v.css.width = Math.floor(width * v.pidW)
+          v.css.height = Math.floor(height * v.pidH)
         }
       }
       this.lsComponentList = lsComponentList
@@ -131,19 +143,15 @@ export default {
       this.h = height
     },
     onResizstop (left, top, width, height) { // 拖拽结束后
-      console.log(left, '拖拽结束了吗？？？？')
-      this.maxLeft = left
-      this.maxTop = top
-      this.maxWidth = width
-      this.maxHeight = height
-      
       this._calculateXYWH()
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
-        v.pidW = v.width/this.w
-        v.pidH = v.height/this.h
-        v.pidX = (v.left - this.x)/this.w
-        v.pidY= (v.top - this.y)/this.h
+        v.x = v.css.x
+        v.y = v.css.y
+        v.pidW = v.css.width/this.w
+        v.pidH = v.css.height/this.h
+        v.pidX = (v.css.x - this.x)/this.w
+        v.pidY = (v.css.y - this.y)/this.h
       }
 
 
@@ -152,59 +160,73 @@ export default {
     componentItemClickHandle(index) { // 点击某个元素发生的事情
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
-        v.x = v.left
-        v.y = v.top
+        v.x = v.css.x
+        v.y = v.css.y
       }
       lsComponentList[index].isSelect = 1
       this.lsComponentList = lsComponentList
       this._calculateXYWH()
       for (let v of lsComponentList) {
-        v.pidW = v.width/this.w
-        v.pidH = v.height/this.h
-        v.pidX = (v.left - this.x)/this.w
-        v.pidY= (v.top - this.y)/this.h
+        v.pidW = v.css.width/this.w
+        v.pidH = v.css.height/this.h
+        v.pidX = (v.css.x - this.x)/this.w
+        v.pidY= (v.css.y - this.y)/this.h
       }
     },
 
-    onPositonHandle (type) { // 位置信息
+    onPositonHandle (type) { // 元素对齐
       var lsComponentList = this.lsComponentList
       switch (type) {
-        case 'left':
+        case 'left': // 左对齐
           for (let v of lsComponentList){
             if(v.isSelect){
-              v.left = this.x
+              v.css.x = this.x
+              v.x =  this.x
+              v.y = v.css.y
             }
           }
           break;
-        case 'top':
+        case 'top': // 上对齐
           for (let v of lsComponentList){
             if(v.isSelect){
-              v.top = this.y
+              v.css.y = this.y
+              v.x =  v.css.x
+              v.y = this.y
             }
           }
           break;
-        case 'right':
+        case 'right': // 右对齐
           for (let v of lsComponentList){
             if(v.isSelect){
-              v.left = this.x+this.w-v.width
+              v.css.x = this.x+this.w-v.css.width
+              v.x = this.x+this.w-v.css.width
+              v.y = v.css.y
             }
+
           }
-        case 'bottom':
+          break;
+        case 'bottom': // 下对齐
           for (let v of lsComponentList){
             if(v.isSelect){
-              v.top = this.y+this.h-v.height
+              v.css.y = this.y+this.h-v.css.height
+              v.x = v.css.x
+              v.y = this.y+this.h-v.css.height
             }
           }
           break;
         this.lsComponentList = lsComponentList
       }
+
       this._calculateXYWH() // 重新计算位置
+
+
     }
   }
 }
 </script>
 
 <style>
-  .componentItem_border{ border: 1px solid #333333}
+  .ss-ul-box li{padding: 15px 0;}
+  .componentItem_border:after{content:'';position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid #333333}
   .componentItem{position: absolute;}
 </style>
