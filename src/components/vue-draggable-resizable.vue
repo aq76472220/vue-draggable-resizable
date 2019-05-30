@@ -8,16 +8,20 @@
       [classNameDraggable]: draggable,
       [classNameResizable]: resizable
     }, className]"
-    @mousedown="elementDown"
+    @mousedown.stop.prevent="elementDown"
   >
-    <div
-      v-for="handle in actualHandles"
-      :key="handle"
-      :class="[classNameHandle, classNameHandle + '-' + handle]"
-      :style="{display: enabled ? 'block' : 'none'}"
-      @mousedown.stop.prevent="handleDown(handle, $event)"
-    >
-      <slot :name="handle"></slot>
+    <div>
+
+      <div class="handle handle-rotate"  @mousedown.stop.prevent="rotateDown($event)"></div>
+      <div
+        v-for="handle in actualHandles"
+        :key="handle"
+        :class="[classNameHandle, classNameHandle + '-' + handle]"
+        :style="{display: enabled ? 'block' : 'none'}"
+        @mousedown.stop.prevent="handleDown(handle, $event)"
+      >
+        <slot :name="handle"></slot>
+      </div>
     </div>
 
     <!--默认插槽-->
@@ -124,37 +128,43 @@
         type: Boolean,
         default: false
       },
-      w: {
+      w: { // 宽度
         type: Number,
         default: 0,
         validator: (val) => typeof val === 'number'
       },
-      h: {
+      h: { // 高度
         type: Number,
         default: 0,
         validator: (val) => typeof val === 'number'
       },
-      x: {
+      x: { // x 轴
         type: Number,
         default: 0,
         validator: (val) => typeof val === 'number'
       },
-      y: {
+      y: { // y 轴
         type: Number,
         default: 0,
         validator: (val) => typeof val === 'number'
       },
-      z: {
+
+      r: { // y 轴
+        type: Number,
+        default: 0,
+        validator: (val) => typeof val === 'number'
+      },
+      z: { // 层级关系
         type: [String, Number],
         default: 10000,
         validator: (val) => (typeof val === 'string' ? val === 'auto' : val >= 0)
       },
-      minWidth: {
+      minWidth: { // 最小宽度
         type: Number,
         default: 0,
         validator: (val) => val >= 0
       },
-      minHeight: {
+      minHeight: { // 最小高度
         type: Number,
         default: 0,
         validator: (val) => val >= 0
@@ -210,6 +220,7 @@
 
     data: function () {
       return {
+        mouseClickPosition: null,
         rawWidth: this.w,
         rawHeight: this.h,
         rawLeft: this.x,
@@ -218,6 +229,7 @@
         rawBottom: null,
         left: this.x,
         top: this.y,
+        rotate: this.r,
         right: null,
         bottom: null,
         aspectFactor: this.w / this.h, // 宽度和长度比例关系
@@ -229,8 +241,9 @@
         maxH: this.maxHeight,
         handle: null,
         enabled: this.active,
-        resizing: false,
-        dragging: false,
+        resizing: false, // 正在放大缩小中
+        dragging: false,  // 正在拖拽中
+        rotateing: false, // 正在旋转中
         zIndex: this.z
       }
     },
@@ -265,7 +278,7 @@
 
     methods: {
       resetBoundsAndMouseState () {
-        this.mouseClickPosition = { mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0 }
+        this.mouseClickPosition = { mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0, o: [0, 0], m: [0, 0] }
         this.bounds = {
           minLeft: null,
           maxLeft: null,
@@ -306,6 +319,31 @@
         }
         return [null, null]
       },
+      calcDragLimits () { // 拖拽或者移动的时候的限制
+        return {
+          minLeft: (this.parentWidth + this.left) % this.grid[0],
+          maxLeft: Math.floor((this.parentWidth - this.width - this.left) / this.grid[0]) * this.grid[0] + this.left,
+          minRight: (this.parentWidth + this.right) % this.grid[0],
+          maxRight: Math.floor((this.parentWidth - this.width - this.right) / this.grid[0]) * this.grid[0] + this.right,
+          minTop: (this.parentHeight + this.top) % this.grid[1],
+          maxTop: Math.floor((this.parentHeight - this.height - this.top) / this.grid[1]) * this.grid[1] + this.top,
+          minBottom: (this.parentHeight + this.bottom) % this.grid[1],
+          maxBottom: Math.floor((this.parentHeight - this.height - this.bottom) / this.grid[1]) * this.grid[1] + this.bottom
+        }
+      },
+      deselect (e) {
+        const target = e.target || e.srcElement
+        const regex = new RegExp(this.className + '-([trmbl]{2})', '')
+        if (!this.$el.contains(target) && !regex.test(target.className)) {
+          if (this.enabled && !this.preventDeactivation) {
+            this.enabled = false
+            this.$emit('deactivated', this.itemData)
+            this.$emit('update:active', false, this.itemData)
+          }
+          removeEvent(document.documentElement, eventsFor.move, this.handleMove)
+        }
+        this.resetBoundsAndMouseState()
+      },
       elementDown (e) {
         const target = e.target || e.srcElement
         if (this.$el.contains(target)) {
@@ -340,38 +378,11 @@
           addEvent(document.documentElement, eventsFor.stop, this.handleUp)
         }
       },
-      calcDragLimits () {
-        return {
-          minLeft: (this.parentWidth + this.left) % this.grid[0],
-          maxLeft: Math.floor((this.parentWidth - this.width - this.left) / this.grid[0]) * this.grid[0] + this.left,
-          minRight: (this.parentWidth + this.right) % this.grid[0],
-          maxRight: Math.floor((this.parentWidth - this.width - this.right) / this.grid[0]) * this.grid[0] + this.right,
-          minTop: (this.parentHeight + this.top) % this.grid[1],
-          maxTop: Math.floor((this.parentHeight - this.height - this.top) / this.grid[1]) * this.grid[1] + this.top,
-          minBottom: (this.parentHeight + this.bottom) % this.grid[1],
-          maxBottom: Math.floor((this.parentHeight - this.height - this.bottom) / this.grid[1]) * this.grid[1] + this.bottom
-        }
-      },
-      deselect (e) {
-        const target = e.target || e.srcElement
-        const regex = new RegExp(this.className + '-([trmbl]{2})', '')
-        if (!this.$el.contains(target) && !regex.test(target.className)) {
-          if (this.enabled && !this.preventDeactivation) {
-            this.enabled = false
-            this.$emit('deactivated', this.itemData)
-            this.$emit('update:active', false, this.itemData)
-          }
-          removeEvent(document.documentElement, eventsFor.move, this.handleMove)
-        }
-        this.resetBoundsAndMouseState()
-      },
-      handleDown (handle, e) {
+      handleDown (handle, e) { // 手柄移动时候发生的事情
         if (this.onResizeStart && this.onResizeStart(handle, e) === false) {
           return
         }
         if (e.stopPropagation) e.stopPropagation()
-        // Here we avoid a dangerous recursion by faking
-        // corner handles as middle handles
         if (this.lockAspectRatio && !handle.includes('m')) {
           this.handle = 'm' + handle.substring(1)
         } else {
@@ -388,6 +399,19 @@
         addEvent(document.documentElement, eventsFor.move, this.handleMove)
         addEvent(document.documentElement, eventsFor.stop, this.handleUp)
       },
+
+      rotateDown (e) { // 旋转元素发发生的事情
+        if (this.onResizeStart && this.onResizeStart(handle, e) === false) {
+          return
+        }
+        if (e.stopPropagation) e.stopPropagation()
+        this.rotateing = true
+        this.mouseClickPosition.o[0] = this.left+this.width/2 // 元素中心点的x值
+        this.mouseClickPosition.o[1] = this.top+this.height/2 //元素中心点的y值
+        addEvent(document.documentElement, eventsFor.move, this.rotateMove)
+        addEvent(document.documentElement, eventsFor.stop, this.handleUp)
+      },
+
       calcResizeLimits () {
         let minW = this.minW
         let minH = this.minH
@@ -483,9 +507,11 @@
           this.handleMove(e)
         } else if (this.dragging) {
           this.elementMove(e)
+        }else if (this.dragging) {
+          this.rotateMove(e)
         }
       },
-      elementMove (e) {
+      elementMove (e) { // 元素移动发生的事情
         const axis = this.axis
         const grid = this.grid
         const mouseClickPosition = this.mouseClickPosition
@@ -502,7 +528,7 @@
         },5)
 
       },
-      handleMove (e) {
+      handleMove (e) { // 拖拽8个角发生的事情
         const handle = this.handle
         const mouseClickPosition = this.mouseClickPosition
         const tmpDeltaX = mouseClickPosition.mouseX - (e.touches ? e.touches[0].pageX : e.pageX)
@@ -521,7 +547,19 @@
         }
         this.$emit('resizing', this.left, this.top, this.width, this.height, this.itemData)
       },
-      handleUp (e) {
+      rotateMove (e) { // 拖拽8个角发生的事情
+        this.mouseClickPosition.m[0] = e.touches ? e.touches[0].pageX : e.pageX // 移动点的x值
+        this.mouseClickPosition.m[1] = e.touches ? e.touches[0].pageY : e.pageY // 移动点的y值
+        let o = this.mouseClickPosition.o
+        let m = this.mouseClickPosition.m
+        if (m[1]>o[1]) {
+          this.rotate = Math.atan((m[0]-o[0])/(o[1]-m[1]))*180/Math.PI + 180
+        } else {
+          this.rotate = Math.atan((m[0]-o[0])/(o[1]-m[1]))*180/Math.PI
+        }
+        this.$emit('rotateing', this.rotate )
+      },
+      handleUp (e) { // 所有的鼠标抬起都会走这里
         this.handle = null
         this.resetBoundsAndMouseState()
         this.rawTop = this.top
@@ -536,7 +574,12 @@
           this.dragging = false
           this.$emit('dragstop', this.left, this.top, this.itemData)
         }
+        if (this.rotateing) {
+          this.rotateing = false
+          this.$emit('rotatestop', this.rotate)
+        }
         removeEvent(document.documentElement, eventsFor.move, this.handleMove)
+        removeEvent(document.documentElement, eventsFor.move, this.rotateMove)
       },
       snapToGrid (grid, pendingX, pendingY) {
         const x = Math.round(pendingX / grid[0]) * grid[0]
@@ -552,6 +595,7 @@
           left: this.left + 'px',
           width: this.width + 'px',
           height: this.height + 'px',
+          transform:`rotate(${this.rotate}deg)`,
           zIndex: this.zIndex,
           ...(this.dragging && this.disableUserSelect ? userSelectNone : userSelectAuto)
         }
@@ -606,6 +650,7 @@
         if (lockAspectRatio && this.resizingOnX) {
           this.rawTop = top - (left - newLeft) / aspectFactor
         }
+
         this.left = newLeft
       },
       rawRight (newRight) {
@@ -656,7 +701,7 @@
         }
         this.bottom = newBottom
       },
-      x () {
+      x (newV) {
         if (this.resizing || this.dragging) {
           return
         }
@@ -681,6 +726,9 @@
           this.rawTop = this.y
           this.rawBottom = this.bottom - delta
         }
+      },
+      r (newRotate) {
+        this.rotate = newRotate
       },
       lockAspectRatio (val) {
         if (val) {
