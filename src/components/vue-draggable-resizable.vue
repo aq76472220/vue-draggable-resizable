@@ -80,6 +80,14 @@
         type: Object,
         default: null
       },
+      fathterClass: { // 父标签的class
+        type: String,
+        default: ''
+      },
+      isCanDragSelect: { // 是否可以拖拽
+        type: Boolean,
+        default: false
+      },
       debug: {
         type: Boolean,
         default: false
@@ -321,7 +329,8 @@
       getParentSize () {
         const parent = this.parent
         if (parent === true) {
-          const style = window.getComputedStyle(this.$el.parentNode, null)
+          console.log(this.$el,'???')
+          const style = window.getComputedStyle(document.querySelector(`.${this.fathterClass}`), null)
           return [
             parseInt(style.getPropertyValue('width'), 10),
             parseInt(style.getPropertyValue('height'), 10)
@@ -436,7 +445,7 @@
         let s_x = this.mouseClickPosition.s[0];
         let s_y = this.mouseClickPosition.s[1];
         setTimeout(()=>{
-          if( (s_x < this.left && s_y < this.top && !this.resizing && !this.rotateing ) || (s_x > (this.left+this.width) && (s_y > (this.top + this.height )) && !this.resizing && !this.rotateing )){
+          if( (s_x < this.left && s_y < this.top && !this.resizing && !this.rotateing && this.isCanDragSelect) || (s_x > (this.left+this.width) && (s_y > (this.top + this.height )) && !this.resizing && !this.rotateing  && this.isCanDragSelect)){
             if (e.stopPropagation) e.stopPropagation()
             this.dragSelecting = true
             addEvent(document.documentElement, eventsFor.move, this.dragSelectMove)

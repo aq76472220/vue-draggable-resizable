@@ -1,6 +1,6 @@
 <template>
-  <div id="app"  @mousedown="fatherClick">
-    <div style="height: 400px; width: 800px; border: 1px solid red; position: relative;">
+  <div class="fathter"  @mousedown="fatherClick" style="height: 400px; width: 800px; border: 1px solid red; position: relative;">
+    <div class="" style="height: 400px; width: 500px; border: 1px solid red; position: relative;">
       <vue-draggable-resizable
         ref = 'resizable'
         :x="x"
@@ -11,6 +11,7 @@
         :isRotate="isRotate"
         :parent="true"
         :debug="true"
+        fathterClass = 'fathter'
         @dragging = "onDragging"
         @dragstop = "onDragstop"
         @resizing = "onResizing"
@@ -65,31 +66,6 @@ export default {
         {isSelect: 0,
           css: {
             width: 150,  height: 150, x: 10, y: 100, r: 0
-          }
-        },
-        {isSelect: 0,
-          css: {
-            width: 150,  height: 150, x: 30, y: 120, r: 0
-          }
-        },
-        {isSelect: 0,
-          css: {
-            width: 150,  height: 150, x: 30, y: 120, r: 0
-          }
-        },
-        {isSelect: 0,
-          css: {
-            width: 150,  height: 150, x: 30, y: 120, r: 0
-          }
-        },
-        {isSelect: 0,
-          css: {
-            width: 150,  height: 150, x: 30, y: 120, r: 0
-          }
-        },
-        {isSelect: 0,
-          css: {
-            width: 150,  height: 150, x: 30, y: 120, r: 0
           }
         },
         {isSelect: 0,
