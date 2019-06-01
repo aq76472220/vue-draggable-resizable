@@ -47,12 +47,6 @@ import _ from 'lodash'
 import './components/vue-draggable-resizable.css'
 
 export default {
-  props: {
-    classNameHandle: {
-      type: String,
-      default: 'ss-handle'
-    },
-  },
   name: 'app',
   data(){
     return {
