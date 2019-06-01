@@ -1,31 +1,44 @@
 <template>
-  <div
-    :style="style"
-    :class="[{
-      [classNameActive]: enabled,
-      [classNameDragging]: dragging,
-      [classNameResizing]: resizing,
-      [classNameDraggable]: draggable,
-      [classNameResizable]: resizable
-    }, className]"
-    @mousedown.stop.prevent="elementDown"
-  >
-    <div>
+  <div>
+    <div
+      :style="style"
+      v-if="w||h"
+      :class="[{
+        [classNameActive]: enabled,
+        [classNameDragging]: dragging,
+        [classNameResizing]: resizing,
+        [classNameDraggable]: draggable,
+        [classNameResizable]: resizable
+      }, className]"
+      @mousedown.stop.prevent="elementDown"
+    >
+      <div>
+        <!--旋转手柄-->
+        <div
+          v-if="isRotate"
+          class="handle handle-rotate"
+          @mousedown.stop.prevent="rotateDown($event)">
+          <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M10.536 3.464A5 5 0 1 0 11 10l1.424 1.425a7 7 0 1 1-.475-9.374L13.659.34A.2.2 0 0 1 14 .483V5.5a.5.5 0 0 1-.5.5H8.483a.2.2 0 0 1-.142-.341l2.195-2.195z" fill="#1486ff" fill-rule="nonzero"></path></svg>
+        </div>
+        <div
 
-      <div class="handle handle-rotate"  @mousedown.stop.prevent="rotateDown($event)"></div>
-      <div
-        v-for="handle in actualHandles"
-        :key="handle"
-        :class="[classNameHandle, classNameHandle + '-' + handle]"
-        :style="{display: enabled ? 'block' : 'none'}"
-        @mousedown.stop.prevent="handleDown(handle, $event)"
-      >
-        <slot :name="handle"></slot>
+          v-for="handle in actualHandles"
+          :key="handle"
+          :class="[classNameHandle, classNameHandle + '-' + handle]"
+          :style="{display: enabled ? 'block' : 'none'}"
+          @mousedown.stop.prevent="handleDown(handle, $event)"
+        >
+          <slot :name="handle"></slot>
+        </div>
       </div>
+      <!--默认插槽-->
+      <slot></slot>
     </div>
-
-    <!--默认插槽-->
-    <slot></slot>
+    <div
+      :style="dragSelectStyle"
+      v-if="dragSelecting"
+      class="ss-dragSelect-box"
+    ></div>
   </div>
 </template>
 
@@ -57,7 +70,6 @@
     WebkitUserSelect: 'auto',
     MsUserSelect: 'auto'
   }
-
   let eventsFor = events.mouse
 
   export default {
@@ -100,6 +112,10 @@
         type: String,
         default: 'ss-handle'
       },
+      isRotate: { // 是否要旋转
+        type: Boolean,
+        default: true
+      },
       disableUserSelect: {
         type: Boolean,
         default: true
@@ -130,13 +146,11 @@
       },
       w: { // 宽度
         type: Number,
-        default: 0,
-        validator: (val) => typeof val === 'number'
+        default: 0
       },
       h: { // 高度
         type: Number,
-        default: 0,
-        validator: (val) => typeof val === 'number'
+        default: 0
       },
       x: { // x 轴
         type: Number,
@@ -244,7 +258,9 @@
         resizing: false, // 正在放大缩小中
         dragging: false,  // 正在拖拽中
         rotateing: false, // 正在旋转中
-        zIndex: this.z
+        dragSelecting: false, //正在拖拽选择框选元素
+        zIndex: this.z,
+        dragSelectDate:{left:0, top:0, width:0, height:0}, // 拖拽选择框的大小
       }
     },
 
@@ -263,6 +279,7 @@
       this.rawRight = this.parentWidth - this.rawWidth - this.rawLeft
       this.rawBottom = this.parentHeight - this.rawHeight - this.rawTop
       addEvent(document.documentElement, 'mousedown', this.deselect)
+      addEvent(document.documentElement, 'mousedown', this.dragSelectDown) // 拖拽选择元素
       addEvent(document.documentElement, 'touchend touchcancel', this.deselect)
       addEvent(window, 'resize', this.checkParentSize)
     },
@@ -278,7 +295,7 @@
 
     methods: {
       resetBoundsAndMouseState () {
-        this.mouseClickPosition = { mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0, o: [0, 0], m: [0, 0] }
+        this.mouseClickPosition = { mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0, o: [0, 0], m: [0, 0], s:[0, 0], e:[0, 0] }
         this.bounds = {
           minLeft: null,
           maxLeft: null,
@@ -344,10 +361,9 @@
         }
         this.resetBoundsAndMouseState()
       },
-      elementDown (e) {
-        const target = e.target || e.srcElement
+      elementDown (e, target) {
+        var target = target || e.target || e.srcElement
         if (this.$el.contains(target)) {
-
           if (this.onDragStart && this.onDragStart(e) === false) {
             return
           }
@@ -410,6 +426,23 @@
         this.mouseClickPosition.o[1] = this.top+this.height/2 //元素中心点的y值
         addEvent(document.documentElement, eventsFor.move, this.rotateMove)
         addEvent(document.documentElement, eventsFor.stop, this.handleUp)
+      },
+      dragSelectDown (e) { // 旋转元素发发生的事情
+        if (this.onResizeStart && this.onResizeStart(handle, e) === false) {
+          return
+        }
+        this.mouseClickPosition.s[0] = e.touches ? e.touches[0].pageX : e.pageX
+        this.mouseClickPosition.s[1] = e.touches ? e.touches[0].pageY : e.pageY
+        let s_x = this.mouseClickPosition.s[0];
+        let s_y = this.mouseClickPosition.s[1];
+        setTimeout(()=>{
+          if( (s_x < this.left && s_y < this.top && !this.resizing && !this.rotateing ) || (s_x > (this.left+this.width) && (s_y > (this.top + this.height )) && !this.resizing && !this.rotateing )){
+            if (e.stopPropagation) e.stopPropagation()
+            this.dragSelecting = true
+            addEvent(document.documentElement, eventsFor.move, this.dragSelectMove)
+            addEvent(document.documentElement, eventsFor.stop, this.handleUp)
+          }
+        },20)
       },
 
       calcResizeLimits () {
@@ -507,8 +540,10 @@
           this.handleMove(e)
         } else if (this.dragging) {
           this.elementMove(e)
-        }else if (this.dragging) {
+        }else if (this.rotateing) {
           this.rotateMove(e)
+        }else if (this.dragSelecting) {
+          this.dragSelectMove(e)
         }
       },
       elementMove (e) { // 元素移动发生的事情
@@ -548,17 +583,54 @@
         this.$emit('resizing', this.left, this.top, this.width, this.height, this.itemData)
       },
       rotateMove (e) { // 拖拽8个角发生的事情
-        this.mouseClickPosition.m[0] = e.touches ? e.touches[0].pageX : e.pageX // 移动点的x值
-        this.mouseClickPosition.m[1] = e.touches ? e.touches[0].pageY : e.pageY // 移动点的y值
+        this.mouseClickPosition.m[0] = e.touches ? e.touches[0].pageX-7 : e.pageX-7 // 移动点的x值
+        this.mouseClickPosition.m[1] = e.touches ? e.touches[0].pageY-7 : e.pageY-7 // 移动点的y值
         let o = this.mouseClickPosition.o
         let m = this.mouseClickPosition.m
+        var atan_o =  Math.atan((m[0]-o[0])/(o[1]-m[1]))*180/Math.PI
         if (m[1]>o[1]) {
-          this.rotate = Math.atan((m[0]-o[0])/(o[1]-m[1]))*180/Math.PI + 180
+          atan_o = atan_o + 180
+        }
+        if(atan_o<3 && atan_o>-3){
+          this.rotate=0
+        } else if(atan_o<93 && atan_o>87){
+          this.rotate=90
+        } else if(atan_o<183 && atan_o>177){
+          this.rotate=180
+        } else if(atan_o<273 && atan_o>267){
+          this.rotate=270
         } else {
-          this.rotate = Math.atan((m[0]-o[0])/(o[1]-m[1]))*180/Math.PI
+          this.rotate = atan_o
         }
         this.$emit('rotateing', this.rotate )
       },
+
+      dragSelectMove (e) {
+        this.mouseClickPosition.m[0] = e.touches ? e.touches[0].pageX - 10 : e.pageX - 10// 移动点的x值
+        this.mouseClickPosition.m[1] = e.touches ? e.touches[0].pageY- 10 : e.pageY- 10 // 移动点的y值
+        let s = this.mouseClickPosition.s
+        let m = this.mouseClickPosition.m
+        let dragSelectDate = this.dragSelectDate
+        if(s[0]<m[0] && s[1]<m[1]){ //开始点在结束点的左上角
+          dragSelectDate.left = s[0]
+          dragSelectDate.top = s[1]
+        } else if (s[0]>m[0] && s[1]<m[1]){
+          dragSelectDate.left = m[0]
+          dragSelectDate.top = s[1]
+        }else if (s[0]>m[0] && s[1]>m[1]){
+          dragSelectDate.left = m[0]
+          dragSelectDate.top = m[1]
+        }else if (s[0]<m[0] && s[1]>m[1]){
+          dragSelectDate.left = s[0]
+          dragSelectDate.top = m[1]
+        }
+        dragSelectDate.width = Math.abs(m[0]-s[0])
+        dragSelectDate.height = Math.abs(m[1]-s[1])
+        this.dragSelectDate = dragSelectDate
+        this.$emit('dragSelecting', s, m)
+      },
+
+
       handleUp (e) { // 所有的鼠标抬起都会走这里
         this.handle = null
         this.resetBoundsAndMouseState()
@@ -577,9 +649,19 @@
         if (this.rotateing) {
           this.rotateing = false
           this.$emit('rotatestop', this.rotate)
+        }if (this.dragSelecting) {
+          this.dragSelecting = false
+          let dragSelectDate = this.dragSelectDate
+          dragSelectDate.left = 0
+          dragSelectDate.top = 0
+          dragSelectDate.width = 0
+          dragSelectDate.height = 0
+          this.dragSelectDate = dragSelectDate
+          this.$emit('dragselectstop')
         }
         removeEvent(document.documentElement, eventsFor.move, this.handleMove)
         removeEvent(document.documentElement, eventsFor.move, this.rotateMove)
+        removeEvent(document.documentElement, eventsFor.move, this.dragSelectMove)
       },
       snapToGrid (grid, pendingX, pendingY) {
         const x = Math.round(pendingX / grid[0]) * grid[0]
@@ -598,6 +680,14 @@
           transform:`rotate(${this.rotate}deg)`,
           zIndex: this.zIndex,
           ...(this.dragging && this.disableUserSelect ? userSelectNone : userSelectAuto)
+        }
+      },
+      dragSelectStyle () {
+        return {
+          top: this.dragSelectDate.top + 'px',
+          left: this.dragSelectDate.left + 'px',
+          width: this.dragSelectDate.width + 'px',
+          height: this.dragSelectDate.height + 'px',
         }
       },
       actualHandles () {
@@ -620,11 +710,9 @@
         return (Boolean(this.handle) && ['tl', 'tr', 'br', 'bl'].includes(this.handle))
       }
     },
-
     watch: {
       active (val) {
         this.enabled = val
-
         if (val) {
           this.$emit('activated', this.itemData)
         } else {
@@ -701,7 +789,7 @@
         }
         this.bottom = newBottom
       },
-      x (newV) {
+      x () {
         if (this.resizing || this.dragging) {
           return
         }
