@@ -1,6 +1,6 @@
 <template>
-  <div class="fathter"  @mousedown="fatherClick" style="height: 400px; width: 800px; border: 1px solid red; position: relative;">
-    <div class="" style="height: 400px; width: 500px; border: 1px solid red; position: relative;">
+  <div class=""  @mousedown="fatherClick" style="height: 400px; width: 800px; border: 1px solid red; position: relative; margin-left: 100px; margin-top: 100px;">
+    <div class="fathter" style="height: 1600px; width: 500px; border: 1px solid red; position: relative;">
       <vue-draggable-resizable
         ref = 'resizable'
         :x="x"
@@ -65,12 +65,12 @@ export default {
       lsComponentList: [
         {isSelect: 0,
           css: {
-            width: 150,  height: 150, x: 10, y: 100, r: 0
+            width: 150,  height: 121, x: 100, y: 200, r: 0
           }
         },
         {isSelect: 0,
           css: {
-            width: 150,  height: 150, x: 30, y: 120, r: 0
+            width: 150,  height: 153, x: 10, y: 100, r: 0
           }
         }
       ]
@@ -138,7 +138,7 @@ export default {
       this.lsComponentList =lsComponentList
     },
     onDragging(left, top){ // 拖拽移动的时候
-      var lsComponentList = this.lsComponentList
+      var lsComponentList =  _.cloneDeep(this.lsComponentList)
       for (let v of lsComponentList) {
         if(v.isSelect){ // 被选中才移动
           v.css.x = Math.floor(left+v.cx)
@@ -154,7 +154,7 @@ export default {
       this.maxTop = top
     },
     onResizing(left, top, width, height){ // 放大缩小的时候
-      var lsComponentList = this.lsComponentList
+      var lsComponentList =  _.cloneDeep(this.lsComponentList)
       for (let v of lsComponentList) {
         if(v.isSelect){ // 被选中才移动
           v.css.x = Math.floor(width * v.pidX + this.x)
@@ -173,11 +173,11 @@ export default {
     _correct(){
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
-        if ((v.css.y+v.css.height)>this.y+this.h) {
+        if (((v.css.y+v.css.height)>this.y+this.h) && v.isSelect) {
           v.css.height = this.y+this.h-v.css.y
         }
 
-        if ((v.css.x+v.css.width)>this.x+this.w) {
+        if (((v.css.x+v.css.width)>this.x+this.w) && v.isSelect) {
           v.css.width = this.x+this.w-v.css.x
         }
       }

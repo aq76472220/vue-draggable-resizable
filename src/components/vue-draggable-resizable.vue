@@ -183,12 +183,12 @@
       },
       minWidth: { // 最小宽度
         type: Number,
-        default: 0,
+        default: 5,
         validator: (val) => val >= 0
       },
       minHeight: { // 最小高度
         type: Number,
-        default: 0,
+        default: 5,
         validator: (val) => val >= 0
       },
       maxWidth: {
@@ -329,8 +329,8 @@
       getParentSize () {
         const parent = this.parent
         if (parent === true) {
-          console.log(this.$el,'???')
           const style = window.getComputedStyle(document.querySelector(`.${this.fathterClass}`), null)
+          console.log(style.getPropertyValue('height'))
           return [
             parseInt(style.getPropertyValue('width'), 10),
             parseInt(style.getPropertyValue('height'), 10)
@@ -371,6 +371,7 @@
         this.resetBoundsAndMouseState()
       },
       elementDown (e, target) {
+        this.checkParentSize()
         var target = target || e.target || e.srcElement
         if (this.$el.contains(target)) {
           if (this.onDragStart && this.onDragStart(e) === false) {
@@ -404,6 +405,7 @@
         }
       },
       handleDown (handle, e) { // 手柄移动时候发生的事情
+        this.checkParentSize()
         if (this.onResizeStart && this.onResizeStart(handle, e) === false) {
           return
         }
