@@ -1,5 +1,5 @@
 <template>
-  <div class=""  @mousedown="fatherClick" style="height: 400px; width: 800px; border: 1px solid red; position: relative; margin-left: 100px; margin-top: 100px;">
+  <div  style="height: 400px; width: 800px; border: 1px solid red; position: relative; margin-left: 120px; margin-top: 100px;">
     <div class="fathter" style="height: 1600px; width: 500px; border: 1px solid red; position: relative;">
       <vue-draggable-resizable
         ref = 'resizable'
@@ -8,16 +8,17 @@
         :w="w"
         :h="h"
         :r="r"
+        :isCanDragSelect="true"
         :isRotate="isRotate"
-        :parent="true"
+        parent="fathter"
         :debug="true"
-        fathterClass = 'fathter'
         @dragging = "onDragging"
         @dragstop = "onDragstop"
         @resizing = "onResizing"
         @resizestop = "onResizstop"
         @rotateing = "onRotateing"
         @dragSelecting = "onRragSelecting"
+        @deactivated = "onDeactivated"
       >
         <!--<div>默认位置</div>-->
       </vue-draggable-resizable>
@@ -89,7 +90,7 @@ export default {
 
   },
   methods: {
-    fatherClick(e){ // 点击document发生的事情
+    onDeactivated(e){ // 点击document发生的事情
       var lsComponentList = this.lsComponentList
       if(!e.shiftKey){
         for (let v of lsComponentList) {
@@ -260,6 +261,7 @@ export default {
     },
 
     componentItemHandle(e,index) { // 点击某个元素发生的事情
+      this.$refs.resizable.checkParentSize() // mmp
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
         v.isCanRotate = 0
@@ -340,6 +342,7 @@ export default {
 </script>
 
 <style>
+  *{padding: 0; margin: 0}
   .ss-ul-box li{padding: 15px 0;}
   .componentItem_border:after{content:'';position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid #999999}
   .componentItem{position: absolute;}

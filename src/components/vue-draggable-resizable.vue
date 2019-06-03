@@ -76,14 +76,6 @@
     replace: true,
     name: 'vue-draggable-resizable',
     props: {
-      itemData: {
-        type: Object,
-        default: null
-      },
-      fathterClass: { // 父标签的class
-        type: String,
-        default: ''
-      },
       isCanDragSelect: { // 是否可以拖拽
         type: Boolean,
         default: false
@@ -257,6 +249,8 @@
         aspectFactor: this.w / this.h, // 宽度和长度比例关系
         parentWidth: null, // 父级元素的宽度
         parentHeight: null, // 父级元素的高度
+        parentLeft: null, // 父级的 left
+        parentTop: null, // 父级的 top
         minW: this.minWidth,
         minH: this.minHeight,
         maxW: this.maxWidth,
@@ -283,7 +277,7 @@
       if (!this.enableNativeDrag) {
         this.$el.ondragstart = () => false
       }
-      [this.parentWidth, this.parentHeight] = this.getParentSize()
+      [this.parentWidth, this.parentHeight, this.parentLeft,this.parentTop] = this.getParentSize()
       this.rawRight = this.parentWidth - this.rawWidth - this.rawLeft
       this.rawBottom = this.parentHeight - this.rawHeight - this.rawTop
       addEvent(document.documentElement, 'mousedown', this.deselect)
@@ -317,33 +311,45 @@
       },
       checkParentSize () {
         if (this.parent) {
-          const [newParentWidth, newParentHeight] = this.getParentSize()
+          const [newParentWidth, newParentHeight,newParentLeft,newParentTop] = this.getParentSize()
           const deltaX = this.parentWidth - newParentWidth
           const deltaY = this.parentHeight - newParentHeight
           this.rawRight -= deltaX
           this.rawBottom -= deltaY
           this.parentWidth = newParentWidth
           this.parentHeight = newParentHeight
+          this.parentLeft = newParentLeft
+          this.parentTop = newParentTop
         }
       },
       getParentSize () {
         const parent = this.parent
         if (parent === true) {
-          const style = window.getComputedStyle(document.querySelector(`.${this.fathterClass}`), null)
-          console.log(style.getPropertyValue('height'))
+          const style = window.getComputedStyle(this.$el.parentNode, null)
           return [
             parseInt(style.getPropertyValue('width'), 10),
-            parseInt(style.getPropertyValue('height'), 10)
+            parseInt(style.getPropertyValue('height'), 10),
           ]
         }
         if (typeof parent === 'string') {
-          const parentNode = document.querySelector(parent)
+          const parentNode = document.querySelector('.'+parent)
           if (!(parentNode instanceof HTMLElement)) {
             throw new Error(`The selector ${parent} does not match any element`)
           }
-          return [parentNode.offsetWidth, parentNode.offsetHeight]
+          //  console.log(parentNode, parentNode.offsetY)
+          return [parentNode.offsetWidth, parentNode.offsetHeight,  this._getAncestorLT(parentNode)[0], this._getAncestorLT(parentNode)[1]]
         }
         return [null, null]
+      },
+      _getAncestorLT (f){ // 获取祖先的left和tip值 (递归)
+        var _offsetLeft = f.offsetLeft
+        var _offsetTop = f.offsetTop
+        if(f.offsetParent){
+          var p = this._getAncestorLT(f.offsetParent)
+          _offsetLeft += p[0]
+          _offsetTop += p[1]
+        }
+        return [_offsetLeft, _offsetTop]
       },
       calcDragLimits () { // 拖拽或者移动的时候的限制
         return {
@@ -358,13 +364,14 @@
         }
       },
       deselect (e) {
+        console.log(e, '走失去焦点了吗？？？')
         const target = e.target || e.srcElement
         const regex = new RegExp(this.className + '-([trmbl]{2})', '')
         if (!this.$el.contains(target) && !regex.test(target.className)) {
           if (this.enabled && !this.preventDeactivation) {
             this.enabled = false
-            this.$emit('deactivated', this.itemData)
-            this.$emit('update:active', false, this.itemData)
+            this.$emit('deactivated', e)
+            this.$emit('update:active', false)
           }
           removeEvent(document.documentElement, eventsFor.move, this.handleMove)
         }
@@ -385,8 +392,8 @@
           }
           if (!this.enabled) {
             this.enabled = true
-            this.$emit('activated', this.itemData)
-            this.$emit('update:active', true, this.itemData)
+            this.$emit('activated')
+            this.$emit('update:active', true)
           }
           if (this.draggable) {
             this.dragging = true
@@ -447,7 +454,7 @@
         let s_x = this.mouseClickPosition.s[0];
         let s_y = this.mouseClickPosition.s[1];
         setTimeout(()=>{
-          if( (s_x < this.left && s_y < this.top && !this.resizing && !this.rotateing && this.isCanDragSelect) || (s_x > (this.left+this.width) && (s_y > (this.top + this.height )) && !this.resizing && !this.rotateing  && this.isCanDragSelect)){
+          if( (s_x < this.left && s_y < this.top && !this.resizing && !this.rotateing && this.isCanDragSelect && !this.enabled) || (s_x > (this.left+this.width) && (s_y > (this.top + this.height )) && !this.resizing && !this.rotateing  && this.isCanDragSelect && !this.enabled)){
             if (e.stopPropagation) e.stopPropagation()
             this.dragSelecting = true
             addEvent(document.documentElement, eventsFor.move, this.dragSelectMove)
@@ -570,7 +577,7 @@
         this.rawLeft = mouseClickPosition.left - deltaX
         this.rawRight = mouseClickPosition.right + deltaX
         setTimeout(()=>{ // 定时器解决这个问题奇葩
-          this.$emit('dragging', this.left, this.top, this.itemData)
+          this.$emit('dragging', this.left, this.top)
         },5)
 
       },
@@ -591,11 +598,11 @@
         } else if (handle.includes('l')) {
           this.rawLeft = mouseClickPosition.left - deltaX
         }
-        this.$emit('resizing', this.left, this.top, this.width, this.height, this.itemData)
+        this.$emit('resizing', this.left, this.top, this.width, this.height)
       },
       rotateMove (e) { // 拖拽8个角发生的事情
-        this.mouseClickPosition.m[0] = e.touches ? e.touches[0].pageX-7 : e.pageX-7 // 移动点的x值
-        this.mouseClickPosition.m[1] = e.touches ? e.touches[0].pageY-7 : e.pageY-7 // 移动点的y值
+        this.mouseClickPosition.m[0] = e.touches ? e.touches[0].pageX-this.parentLeft : e.pageX-this.parentLeft // 移动点的x值
+        this.mouseClickPosition.m[1] = e.touches ? e.touches[0].pageY-this.parentTop : e.pageY-this.parentTop // 移动点的y值
         let o = this.mouseClickPosition.o
         let m = this.mouseClickPosition.m
         var atan_o =  Math.atan((m[0]-o[0])/(o[1]-m[1]))*180/Math.PI
@@ -615,10 +622,9 @@
         }
         this.$emit('rotateing', this.rotate )
       },
-
       dragSelectMove (e) {
-        this.mouseClickPosition.m[0] = e.touches ? e.touches[0].pageX - 10 : e.pageX - 10// 移动点的x值
-        this.mouseClickPosition.m[1] = e.touches ? e.touches[0].pageY- 10 : e.pageY- 10 // 移动点的y值
+        this.mouseClickPosition.m[0] = e.touches ? e.touches[0].pageX : e.pageX // 移动点的x值
+        this.mouseClickPosition.m[1] = e.touches ? e.touches[0].pageY : e.pageY // 移动点的y值
         let s = this.mouseClickPosition.s
         let m = this.mouseClickPosition.m
         let dragSelectDate = this.dragSelectDate
@@ -638,9 +644,8 @@
         dragSelectDate.width = Math.abs(m[0]-s[0])
         dragSelectDate.height = Math.abs(m[1]-s[1])
         this.dragSelectDate = dragSelectDate
-        this.$emit('dragSelecting', s, m)
+        this.$emit('dragSelecting', [s[0]-this.parentLeft, s[1]-this.parentTop], [m[0]-this.parentLeft, m[1]-this.parentTop])
       },
-
 
       handleUp (e) { // 所有的鼠标抬起都会走这里
         this.handle = null
@@ -651,11 +656,11 @@
         this.rawRight = this.right
         if (this.resizing) {
           this.resizing = false
-          this.$emit('resizestop', this.left, this.top, this.width, this.height, this.itemData)
+          this.$emit('resizestop', this.left, this.top, this.width, this.height)
         }
         if (this.dragging) {
           this.dragging = false
-          this.$emit('dragstop', this.left, this.top, this.itemData)
+          this.$emit('dragstop', this.left, this.top)
         }
         if (this.rotateing) {
           this.rotateing = false
@@ -725,9 +730,9 @@
       active (val) {
         this.enabled = val
         if (val) {
-          this.$emit('activated', this.itemData)
+          this.$emit('activated')
         } else {
-          this.$emit('deactivated', this.itemData)
+          this.$emit('deactivated')
         }
       },
       z (val) {
