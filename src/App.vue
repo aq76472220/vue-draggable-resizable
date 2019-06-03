@@ -24,7 +24,7 @@
       <div v-for="(item, index) in lsComponentList">
         <div
           class="componentItem"
-          :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)',zIndex:item.css.z, cursor: item.isSelect?'move':''}"
+          :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)',zIndex:item.css.z}"
           :class="{componentItem_border: item.isSelect}"
           @mousedown.stop.prevent="componentItemHandle($event, index)"
         >我是元素{{index}}
@@ -72,12 +72,17 @@ export default {
           css: {
             width: 150,  height: 153, x: 10, y: 100, r: 0, z: 4
           }
+        },
+        {isSelect: 0,
+          css: {
+            width: 180,  height: 153, x: 30, y: 130, r: 0, z: 4
+          }
         }
       ]
     }
   },
   mounted(){
-    this._calculateXYWH() // 计算x, y, w, h
+    this._calculateXYWH(true) // 计算x, y, w, h
   },
   computed: {
 
@@ -108,7 +113,7 @@ export default {
       var _arrY = []
       var _arrR = []
       var _arrB = []
-      var lsComponentList = _.cloneDeep(this.lsComponentList);
+      var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
         if(v.isSelect){
           _arrX.push(v.css.x)
@@ -122,8 +127,11 @@ export default {
       this.maxWidth = this.w  = _arrR.length>0 ? Math.floor(Math.max(..._arrR)-this.maxLeft) : 0
       this.maxHeight = this.h  = _arrB.length>0 ? Math.floor(Math.max(..._arrB)-this.maxTop) : 0
       if(isAlign){ // 对其另行处理
+        var [parentWidth, parentHeight] =  this.$refs.resizable.getParentSize()
         this.$refs.resizable.left = this.maxLeft
         this.$refs.resizable.top = this.maxTop
+        this.$refs.resizable.right = parentWidth - this.maxLeft - this.maxWidth
+        this.$refs.resizable.bottom = parentHeight - this.maxTop - this.maxHeight
       }
       for (let v of lsComponentList) {
         if(v.isSelect){
@@ -216,10 +224,10 @@ export default {
         }
       }
       this.lsComponentList = lsComponentList
-      this._calculateNum(e)
-      this._calculateXYWH()
+      this._calculateIsHasRotate()
+      this._calculateXYWH(true)
     },
-    _calculateNum(e){
+    _calculateIsHasRotate(){
       let lsComponentList = this.lsComponentList
       let num = 0
       for (let v of lsComponentList){
@@ -227,7 +235,7 @@ export default {
           num ++
         }
       }
-      if(num==1){
+      if(num==1){ //
         this.isRotate = true
         for (let v of lsComponentList){
           if(v.isSelect){
@@ -238,10 +246,6 @@ export default {
         this.r = 0
         this.isRotate = false
       }
-      setTimeout(()=>{
-        this.$refs.resizable.elementDown(e, this.$refs.resizable.$el)
-      },10)
-
     },
 
     //元素四个点是否都在范围内
@@ -265,22 +269,32 @@ export default {
     componentItemHandle(e,index) { // 点击某个元素发生的事情
       this.$refs.resizable.checkParentSize() // mmp
       var lsComponentList = this.lsComponentList
-      // for (let v of lsComponentList) {
-      //   v.isCanRotate = 0
-      //   if (e.shiftKey ){
-      //     v.isSelect = 1
-      //   }
-      // }
-
-      if (lsComponentList[index].isSelect) {
-        lsComponentList[index].isSelect = 0
-      } else {
-        lsComponentList[index].isSelect = 1
+      let num = 0
+      for (let v of lsComponentList){
+        if(v.isSelect){
+          num ++
+        }
       }
-      
-      lsComponentList[index].isCanRotate = 1
+      if (e.shiftKey ){
+        if (lsComponentList[index].isSelect) {
+          lsComponentList[index].isSelect = 0
+        } else {
+          lsComponentList[index].isSelect = 1
+        }
+      } else {
+        if( !lsComponentList[index].isSelect){
+          for (let v of lsComponentList) {
+            v.isSelect = 0
+          }
+          lsComponentList[index].isSelect = 1
+        }
+      }
+      setTimeout(()=>{
+        this.$refs.resizable.elementDown(e, this.$refs.resizable.$el)
+      },10)
+
       this.lsComponentList = lsComponentList
-      this._calculateXYWH()
+      this._calculateXYWH(true)
       for (let v of lsComponentList) {
         v.pidW = v.css.width/this.w
         v.pidH = v.css.height/this.h
@@ -288,7 +302,7 @@ export default {
         v.pidY= (v.css.y - this.y)/this.h
       }
       this.r = lsComponentList[index].css.r
-      this._calculateNum(e) // 计算是否只有一个
+      this._calculateIsHasRotate() // 计算是否只有一个
 
     },
 
@@ -352,9 +366,9 @@ export default {
 <style>
   *{padding: 0; margin: 0}
   .ss-ul-box li{padding: 15px 0;}
-  .componentItem_border:after{content:'';position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid #999999}
+  .componentItem_border:after{content:'';position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid #1486ff}
   .componentItem{position: absolute;}
-  .componentItem:hover:after{content:'';position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid #999999}
+  .componentItem:hover:after{content:'';position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid #1486ff}
 </style>
 
 
