@@ -1,6 +1,6 @@
 <template>
-  <div  style="height: 400px; width: 800px; border: 1px solid red; position: relative; margin-left: 120px; margin-top: 100px;">
-    <div class="fathter" style="height: 1600px; width: 500px; border: 1px solid red; position: relative;">
+  <div   @mousedown="fatherClick">
+    <div class="fathter" style="height: 400px; width: 500px; border: 1px solid red; position: relative;">
       <vue-draggable-resizable
         ref = 'resizable'
         :x="x"
@@ -18,27 +18,26 @@
         @resizestop = "onResizstop"
         @rotateing = "onRotateing"
         @dragSelecting = "onRragSelecting"
-        @deactivated = "onDeactivated"
       >
         <!--<div>默认位置</div>-->
       </vue-draggable-resizable>
       <div v-for="(item, index) in lsComponentList">
         <div
           class="componentItem"
-          :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)'}"
+          :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)',zIndex:item.css.z, cursor: item.isSelect?'move':''}"
           :class="{componentItem_border: item.isSelect}"
           @mousedown.stop.prevent="componentItemHandle($event, index)"
         >我是元素{{index}}
         </div>
       </div>
     </div>
-    <ul class="ss-ul-box">
-      <li @mousedown.stop="onPositonHandle('verticalcenter')">垂直居中</li>
-      <li @mousedown.stop="onPositonHandle('horizontalcenter')">水平居中</li>
-      <li @mousedown.stop="onPositonHandle('left')">左</li>
-      <li @mousedown.stop="onPositonHandle('top')">上</li>
-      <li @mousedown.stop="onPositonHandle('right')">右</li>
-      <li @mousedown.stop="onPositonHandle('bottom')">下</li>
+    <ul class="ss-ul-box" @mousedown.stop>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'verticalcenter')">垂直居中</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'horizontalcenter')">水平居中</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'left')">左</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'top')">上</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'right')">右</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'bottom')">下</li>
     </ul>
   </div>
 </template>
@@ -66,12 +65,12 @@ export default {
       lsComponentList: [
         {isSelect: 0,
           css: {
-            width: 150,  height: 121, x: 100, y: 200, r: 0
+            width: 150,  height: 121, x: 100, y: 200, r: 0, z:3
           }
         },
         {isSelect: 0,
           css: {
-            width: 150,  height: 153, x: 10, y: 100, r: 0
+            width: 150,  height: 153, x: 10, y: 100, r: 0, z: 4
           }
         }
       ]
@@ -90,7 +89,7 @@ export default {
 
   },
   methods: {
-    onDeactivated(e){ // 点击document发生的事情
+    fatherClick(e){ // 点击document发生的事情
       var lsComponentList = this.lsComponentList
       if(!e.shiftKey){
         for (let v of lsComponentList) {
@@ -217,11 +216,11 @@ export default {
         }
       }
       this.lsComponentList = lsComponentList
-      this._calculateRotate()
+      this._calculateNum(e)
       this._calculateXYWH()
     },
 
-    _calculateRotate(){
+    _calculateNum(e){
       let lsComponentList = this.lsComponentList
       let num = 0
       for (let v of lsComponentList){
@@ -236,6 +235,9 @@ export default {
             this.r = v.css.r
           }
         }
+        setTimeout(()=>{
+          this.$refs.resizable.elementDown(e, this.$refs.resizable.$el)
+        },10)
       } else {
         this.r = 0
         this.isRotate = false
@@ -280,13 +282,13 @@ export default {
         v.pidY= (v.css.y - this.y)/this.h
       }
       this.r = lsComponentList[index].css.r
-      setTimeout(()=>{
-        this.$refs.resizable.elementDown(e, this.$refs.resizable.$el)
-      },10)
-      this._calculateRotate() // 计算是否只有一个
+      this._calculateNum(e) // 计算是否只有一个
+
     },
 
-    onPositonHandle (type) { // 元素对齐
+    onPositonHandle (e, type) { // 元素对齐
+      console.log(e.preventDefault())
+      if(e) e.preventDefault();
       var lsComponentList = this.lsComponentList
       switch (type) {
         case 'left': // 左对齐

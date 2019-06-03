@@ -170,7 +170,7 @@
       },
       z: { // 层级关系
         type: [String, Number],
-        default: 10000,
+        default: 2,
         validator: (val) => (typeof val === 'string' ? val === 'auto' : val >= 0)
       },
       minWidth: { // 最小宽度
@@ -364,7 +364,6 @@
         }
       },
       deselect (e) {
-        console.log(e, '走失去焦点了吗？？？')
         const target = e.target || e.srcElement
         const regex = new RegExp(this.className + '-([trmbl]{2})', '')
         if (!this.$el.contains(target) && !regex.test(target.className)) {
