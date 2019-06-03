@@ -219,7 +219,6 @@ export default {
       this._calculateNum(e)
       this._calculateXYWH()
     },
-
     _calculateNum(e){
       let lsComponentList = this.lsComponentList
       let num = 0
@@ -235,13 +234,14 @@ export default {
             this.r = v.css.r
           }
         }
-        setTimeout(()=>{
-          this.$refs.resizable.elementDown(e, this.$refs.resizable.$el)
-        },10)
       } else {
         this.r = 0
         this.isRotate = false
       }
+      setTimeout(()=>{
+        this.$refs.resizable.elementDown(e, this.$refs.resizable.$el)
+      },10)
+
     },
 
     //元素四个点是否都在范围内
@@ -265,13 +265,19 @@ export default {
     componentItemHandle(e,index) { // 点击某个元素发生的事情
       this.$refs.resizable.checkParentSize() // mmp
       var lsComponentList = this.lsComponentList
-      for (let v of lsComponentList) {
-        v.isCanRotate = 0
-        if (!e.shiftKey){
-          v.isSelect = 0
-        }
+      // for (let v of lsComponentList) {
+      //   v.isCanRotate = 0
+      //   if (e.shiftKey ){
+      //     v.isSelect = 1
+      //   }
+      // }
+
+      if (lsComponentList[index].isSelect) {
+        lsComponentList[index].isSelect = 0
+      } else {
+        lsComponentList[index].isSelect = 1
       }
-      lsComponentList[index].isSelect = 1
+      
       lsComponentList[index].isCanRotate = 1
       this.lsComponentList = lsComponentList
       this._calculateXYWH()
