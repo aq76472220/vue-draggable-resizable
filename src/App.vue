@@ -24,7 +24,7 @@
       <div v-for="(item, index) in lsComponentList">
         <div
           class="componentItem"
-          :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)',zIndex:item.css.z}"
+          :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)',git}"
           :class="{componentItem_border: item.isSelect}"
           @mousedown.stop.prevent="componentItemHandle($event, index)"
         >我是元素{{index}}
