@@ -76,6 +76,10 @@
     replace: true,
     name: 'vue-draggable-resizable',
     props: {
+      classNameNactive : { // 静止取消选择的calss名字
+        type : String,
+        default: 'n_active'
+      },
       isCanDragSelect: { // 是否可以拖拽
         type: Boolean,
         default: false
@@ -256,7 +260,7 @@
         maxW: this.maxWidth,
         maxH: this.maxHeight,
         handle: null,
-        enabled: this.active,
+        enabled: this.active, // 是否出现手柄
         resizing: false, // 正在放大缩小中
         dragging: false,  // 正在拖拽中
         rotateing: false, // 正在旋转中
@@ -364,10 +368,11 @@
         }
       },
       deselect (e) {
+
         const target = e.target || e.srcElement
         const regex = new RegExp(this.className + '-([trmbl]{2})', '')
-        if (!this.$el.contains(target) && !regex.test(target.className)) {
-          if (this.enabled && !this.preventDeactivation) {
+        if (!this.$el.contains(target) && !regex.test(target.className) && !new RegExp(this.classNameNactive).test(target.className) ) {
+          if (!this.preventDeactivation) {
             this.enabled = false
             this.$emit('deactivated', e)
             this.$emit('update:active', false)
@@ -448,8 +453,8 @@
         if (this.onResizeStart && this.onResizeStart(handle, e) === false) {
           return
         }
-        this.mouseClickPosition.s[0] = e.touches ? e.touches[0].pageX : e.pageX
-        this.mouseClickPosition.s[1] = e.touches ? e.touches[0].pageY : e.pageY
+        this.mouseClickPosition.s[0] =  e.pageX
+        this.mouseClickPosition.s[1] =  e.pageY
         let s_x = this.mouseClickPosition.s[0];
         let s_y = this.mouseClickPosition.s[1];
         setTimeout(()=>{
@@ -460,6 +465,7 @@
             addEvent(document.documentElement, eventsFor.stop, this.handleUp)
           }
         },20)
+        return false
       },
 
       calcResizeLimits () {
@@ -622,28 +628,29 @@
         this.$emit('rotateing', this.rotate )
       },
       dragSelectMove (e) {
-        this.mouseClickPosition.m[0] = e.touches ? e.touches[0].pageX : e.pageX // 移动点的x值
-        this.mouseClickPosition.m[1] = e.touches ? e.touches[0].pageY : e.pageY // 移动点的y值
+        e.preventDefault()
+        this.mouseClickPosition.m[0] =  e.pageX // 移动点的x值
+        this.mouseClickPosition.m[1] =  e.pageY // 移动点的y值
         let s = this.mouseClickPosition.s
         let m = this.mouseClickPosition.m
         let dragSelectDate = this.dragSelectDate
         if(s[0]<m[0] && s[1]<m[1]){ //开始点在结束点的左上角
-          dragSelectDate.left = s[0]
-          dragSelectDate.top = s[1]
+          dragSelectDate.left = s[0]-this.getScrollOffset().x
+          dragSelectDate.top = s[1]-this.getScrollOffset().y
         } else if (s[0]>m[0] && s[1]<m[1]){
-          dragSelectDate.left = m[0]
-          dragSelectDate.top = s[1]
+          dragSelectDate.left = m[0]-this.getScrollOffset().x
+          dragSelectDate.top = s[1]-this.getScrollOffset().y
         }else if (s[0]>m[0] && s[1]>m[1]){
-          dragSelectDate.left = m[0]
-          dragSelectDate.top = m[1]
+          dragSelectDate.left = m[0]-this.getScrollOffset().x
+          dragSelectDate.top = m[1]-this.getScrollOffset().y
         }else if (s[0]<m[0] && s[1]>m[1]){
-          dragSelectDate.left = s[0]
-          dragSelectDate.top = m[1]
+          dragSelectDate.left = s[0]-this.getScrollOffset().x
+          dragSelectDate.top = m[1]-this.getScrollOffset().y
         }
         dragSelectDate.width = Math.abs(m[0]-s[0])
         dragSelectDate.height = Math.abs(m[1]-s[1])
         this.dragSelectDate = dragSelectDate
-        this.$emit('dragSelecting', [s[0]-this.parentLeft, s[1]-this.parentTop], [m[0]-this.parentLeft, m[1]-this.parentTop])
+        this.$emit('dragSelecting', [s[0]-this.parentLeft, s[1]], [m[0]-this.parentLeft, m[1]-this.parentTop])
       },
 
       handleUp (e) { // 所有的鼠标抬起都会走这里
@@ -682,6 +689,19 @@
         const x = Math.round(pendingX / grid[0]) * grid[0]
         const y = Math.round(pendingY / grid[1]) * grid[1]
         return [x, y]
+      },
+      getScrollOffset() { // 获取滚动距离
+        if (window.pageXOffset) {
+          return {
+            x: window.pageXOffset,
+            y: window.pageYOffset
+          }
+        } else {
+          return {
+            x: document.body.scrollLeft + document.documentElement.scrollLeft,
+            y: document.body.scrollTop + document.documentElement.scrollTop
+          }
+        }
       }
     },
     computed: {

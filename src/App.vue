@@ -1,5 +1,5 @@
 <template>
-  <div   @mousedown="fatherClick">
+  <div  style="height: 1600px; width: 1600px">
     <div class="fathter" style="height: 400px; width: 500px; border: 1px solid red; position: relative;">
       <vue-draggable-resizable
         ref = 'resizable'
@@ -12,19 +12,21 @@
         :isRotate="isRotate"
         parent="fathter"
         :debug="true"
+        :preventDeactivation = "preventDeactivation"
         @dragging = "onDragging"
         @dragstop = "onDragstop"
         @resizing = "onResizing"
         @resizestop = "onResizstop"
         @rotateing = "onRotateing"
         @dragSelecting = "onRragSelecting"
+        @deactivated = "onDeactivated"
       >
         <!--<div>默认位置</div>-->
       </vue-draggable-resizable>
       <div v-for="(item, index) in lsComponentList">
         <div
-          class="componentItem"
-          :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)',git}"
+          class="componentItem  n_active"
+          :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)',zIndex: item.css.z}"
           :class="{componentItem_border: item.isSelect}"
           @mousedown.stop.prevent="componentItemHandle($event, index)"
         >我是元素{{index}}
@@ -32,12 +34,12 @@
       </div>
     </div>
     <ul class="ss-ul-box" @mousedown.stop>
-      <li @mousedown.stop.prevent="onPositonHandle($event, 'verticalcenter')">垂直居中</li>
-      <li @mousedown.stop.prevent="onPositonHandle($event, 'horizontalcenter')">水平居中</li>
-      <li @mousedown.stop.prevent="onPositonHandle($event, 'left')">左</li>
-      <li @mousedown.stop.prevent="onPositonHandle($event, 'top')">上</li>
-      <li @mousedown.stop.prevent="onPositonHandle($event, 'right')">右</li>
-      <li @mousedown.stop.prevent="onPositonHandle($event, 'bottom')">下</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'verticalcenter')" class="n_active">垂直居中</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'horizontalcenter')"  class="n_active">水平居中</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'left')" class="n_active">左</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'top')" class="n_active">上</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'right')" class="n_active">右</li>
+      <li @mousedown.stop.prevent="onPositonHandle($event, 'bottom')"class="n_active">下</li>
     </ul>
   </div>
 </template>
@@ -56,6 +58,7 @@ export default {
       x:0,
       y:0,
       r:0,
+      preventDeactivation:false,
       isRotate: true,
       isSlectResiz: false, // 是否有选中的
       maxWidth: 0, // 拖拽框的宽度
@@ -70,12 +73,12 @@ export default {
         },
         {isSelect: 0,
           css: {
-            width: 150,  height: 153, x: 10, y: 100, r: 0, z: 4
+            width: 110,  height: 111, x: 10, y: 20, r: 0, z:4
           }
         },
         {isSelect: 0,
           css: {
-            width: 180,  height: 153, x: 30, y: 130, r: 0, z: 4
+            width: 80,  height: 201, x: 100, y: 200, r: 0, z:5
           }
         }
       ]
@@ -94,7 +97,7 @@ export default {
 
   },
   methods: {
-    fatherClick(e){ // 点击document发生的事情
+    onDeactivated(e){ // 点击document发生的事情
       var lsComponentList = this.lsComponentList
       if(!e.shiftKey){
         for (let v of lsComponentList) {
@@ -204,14 +207,14 @@ export default {
     onRotateing(rotate){ // 旋转的时候发生的事情
       var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
-        if(v.isCanRotate){
+        if(v.isSelect){
           v.css.r = rotate
         }
       }
       this.r = rotate // 日了狗了
       this.lsComponentList = lsComponentList
     },
-    onRragSelecting (s, m) { // 拖拽选框发生的事情
+    onRragSelecting (s, m) { // 拖拽选框发生的事情 s:开始位置， m移动的位置
       let lsComponentList = this.lsComponentList
       let mousePosition = []
       mousePosition[0] = s
@@ -283,6 +286,7 @@ export default {
         }
       } else {
         if( !lsComponentList[index].isSelect){
+          console.log(121212)
           for (let v of lsComponentList) {
             v.isSelect = 0
           }
@@ -290,6 +294,7 @@ export default {
         }
       }
       setTimeout(()=>{
+        //this.$$refs.resizable.enabled = true
         this.$refs.resizable.elementDown(e, this.$refs.resizable.$el)
       },10)
 
@@ -307,8 +312,7 @@ export default {
     },
 
     onPositonHandle (e, type) { // 元素对齐
-      console.log(e.preventDefault())
-      if(e) e.preventDefault();
+      // this.preventDeactivation = true
       var lsComponentList = this.lsComponentList
       switch (type) {
         case 'left': // 左对齐
@@ -367,7 +371,7 @@ export default {
   *{padding: 0; margin: 0}
   .ss-ul-box li{padding: 15px 0;}
   .componentItem_border:after{content:'';position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid #1486ff}
-  .componentItem{position: absolute;}
+  .componentItem{position: absolute;  background: #eee}
   .componentItem:hover:after{content:'';position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: 1px solid #1486ff}
 </style>
 
