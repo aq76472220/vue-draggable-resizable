@@ -1,6 +1,6 @@
 {
   "name": "vue-draggable-lu",
-  "version": "1.0.28",
+  "version": "1.0.44",
   "author": "Maurizio Bonani <maurizio.bonani@gmail.com>",
   "main": "dist/VueDraggableResizable.umd.min.js",
   "unpkg": "dist/VueDraggableResizable.umd.min.js",
