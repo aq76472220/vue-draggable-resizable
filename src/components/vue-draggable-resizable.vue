@@ -396,6 +396,7 @@ export default {
     deselect (e) {
       const target = e.target || e.srcElement
       const regex = new RegExp(this.className + '-([trmbl]{2})', '')
+      console.log('deselect...',  !this.$el.contains(target),  !regex.test(target.className) && !this._checkIsCanCancel(target))
       if (!this.$el.contains(target) && !regex.test(target.className) && !this._checkIsCanCancel(target)) {
         if (!this.preventDeactivation) {
           this.enabled = false
@@ -584,6 +585,7 @@ export default {
       this.allElemtY = this._getElemtSTL(document.querySelector('.' + this.parent))[1]
     },
     move (e) {
+      console.log('move..........', this.dragging)
       e.preventDefault()
       if (this.resizing) {
         this.handleMove(e)
@@ -596,6 +598,7 @@ export default {
       }
     },
     elementMove (e) { // 元素移动发生的事情
+      console.log('elementMove..........', this.dragging)
       const axis = this.axis
       const grid = this.grid
       const mouseClickPosition = this.mouseClickPosition
@@ -679,6 +682,7 @@ export default {
     },
 
     handleUp (e) { // 所有的鼠标抬起都会走这里
+      console.log('handleUp鼠标抬起了', 'dragging:'+this.dragging)
       this.handle = null
       this.rawTop = this.top
       this.rawBottom = this.bottom
