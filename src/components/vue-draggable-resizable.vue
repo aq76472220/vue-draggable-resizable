@@ -386,15 +386,10 @@ export default {
       }
     },
     _checkIsCanCancel(target){ // 检查当前这个元素是不不给取消
-      console.log(target,'###########')
       var isHasNoClick = false
       var regex = new RegExp(this.classNameNactive)
       if(regex.test(target.className)){
-        return true
-      } else {
-        if(target.parentNode){
-          this._checkIsCanCancel(target.parentNode )
-        }
+        isHasNoClick =  true
       }
       return isHasNoClick
     },

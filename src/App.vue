@@ -1,6 +1,6 @@
 <template>
   <div style="height:600px; width: 600px; margin-left: 100px; margin-top: 120px; overflow: auto" class="scrollFathter">
-    <div  style="height:800px; width: 800px; ">
+    <div  style="height:800px; width: 800px;" class="cancelSelected">
       <div class="fathter" style="height: 400px; width: 400px; border: 1px solid red; position: relative;">
         <vue-draggable-resizable
           ref = 'resizable'
@@ -101,18 +101,24 @@ export default {
   },
   methods: {
     onDeactivated (e) { // 点击document发生的事情
-      var lsComponentList = this.lsComponentList
-      if (!e.shiftKey) {
-        for (let v of lsComponentList) {
-          v.isSelect = 0
+      var target = e.target || e.srcElement
+      var regex = new RegExp('cancelSelected')
+      if (regex.test(target.className)){
+        var lsComponentList = this.lsComponentList
+        if (!e.shiftKey) {
+          for (let v of lsComponentList) {
+            v.isSelect = 0
+          }
+          this.lsComponentList = lsComponentList
+          this.x = 0
+          this.y = 0
+          this.w = 0
+          this.h = 0
+          this.isRotate = false
         }
-        this.lsComponentList = lsComponentList
-        this.x = 0
-        this.y = 0
-        this.w = 0
-        this.h = 0
-        this.isRotate = false
       }
+      console.log(e.target)
+
     },
     _calculateXYWH (isAlign = false) { // 计算x, y, w, h  isAlign 是否走的是对其的
       var _arrX = []
