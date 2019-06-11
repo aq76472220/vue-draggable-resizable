@@ -500,21 +500,22 @@ export default {
       this.checkParentSize()
       var target = target || e.target || e.srcElement
       if (this.$el.contains(target)) {
-        if (this.onDragStart && this.onDragStart(e) === false) {
-          return
-        }
-        if (
-          (this.dragHandle && !matchesSelectorToParentElements(target, this.dragHandle, this.$el)) ||
-          (this.dragCancel && matchesSelectorToParentElements(target, this.dragCancel, this.$el))
-        ) {
-          return
-        }
+        // if (this.onDragStart && this.onDragStart(e) === false) {
+        //   return
+        // }
+        // if (
+        //   (this.dragHandle && !matchesSelectorToParentElements(target, this.dragHandle, this.$el)) ||
+        //   (this.dragCancel && matchesSelectorToParentElements(target, this.dragCancel, this.$el))
+        // ) {
+        //   return
+        // }
         if (!this.enabled) {
           this.enabled = true
           this.$emit('activated')
           this.$emit('update:active', true)
         }
         if (this.draggable) {
+          console.log('..............走这里了............', this.draggable)
           this.dragging = true
         }
         this.mouseClickPosition.mouseX = e.touches ? e.touches[0].pageX : e.pageX
@@ -598,21 +599,21 @@ export default {
       }
     },
     elementMove (e) { // 元素移动发生的事情
-      console.log('elementMove..........', this.dragging)
-      const axis = this.axis
-      const grid = this.grid
-      const mouseClickPosition = this.mouseClickPosition
-      const tmpDeltaX = axis && axis !== 'y' ? mouseClickPosition.mouseX - (e.touches ? e.touches[0].pageX : e.pageX) : 0
-      const tmpDeltaY = axis && axis !== 'x' ? mouseClickPosition.mouseY - (e.touches ? e.touches[0].pageY : e.pageY) : 0
-      const [deltaX, deltaY] = this.snapToGrid(this.grid, tmpDeltaX, tmpDeltaY)
-      if (!deltaX && !deltaY) return
-      this.rawTop = mouseClickPosition.top - deltaY
-      this.rawBottom = mouseClickPosition.bottom + deltaY
-      this.rawLeft = mouseClickPosition.left - deltaX
-      this.rawRight = mouseClickPosition.right + deltaX
-      setTimeout(() => { // 定时器解决这个问题奇葩
-        this.$emit('dragging', this.left, this.top)
-      }, 5)
+        console.log('elementMove..........', this.dragging)
+        const axis = this.axis
+        const grid = this.grid
+        const mouseClickPosition = this.mouseClickPosition
+        const tmpDeltaX = axis && axis !== 'y' ? mouseClickPosition.mouseX - (e.touches ? e.touches[0].pageX : e.pageX) : 0
+        const tmpDeltaY = axis && axis !== 'x' ? mouseClickPosition.mouseY - (e.touches ? e.touches[0].pageY : e.pageY) : 0
+        const [deltaX, deltaY] = this.snapToGrid(this.grid, tmpDeltaX, tmpDeltaY)
+        if (!deltaX && !deltaY) return
+        this.rawTop = mouseClickPosition.top - deltaY
+        this.rawBottom = mouseClickPosition.bottom + deltaY
+        this.rawLeft = mouseClickPosition.left - deltaX
+        this.rawRight = mouseClickPosition.right + deltaX
+        setTimeout(() => { // 定时器解决这个问题奇葩
+          this.$emit('dragging', this.left, this.top)
+        }, 5)
     },
     handleMove (e) { // 拖拽8个角发生的事情
       const handle = this.handle
@@ -694,12 +695,14 @@ export default {
       }
       if (this.dragging) {
         this.dragging = false
+        console.log('handleUp鼠标抬起了结束了', 'dragging:'+this.dragging)
         this.$emit('dragstop', this.left, this.top)
       }
       if (this.rotateing) {
         this.rotateing = false
         this.$emit('rotatestop', this.rotate)
-      } if (this.dragSelecting) {
+      }
+      if (this.dragSelecting) {
         this.mouseClickPosition.m[0] = e.pageX // 移动点的x值
         this.mouseClickPosition.m[1] = e.pageY // 移动点的y值
         this.dragSelecting = false
