@@ -345,7 +345,6 @@ export default {
         if (!(parentNode instanceof HTMLElement)) {
           throw new Error(`The selector ${parent} does not match any element`)
         }
-        //  console.log(parentNode, parentNode.offsetY)
         return [parentNode.offsetWidth, parentNode.offsetHeight, this._getAncestorLT(parentNode)[0], this._getAncestorLT(parentNode)[1]]
       }
       return [null, null]
@@ -396,7 +395,6 @@ export default {
     deselect (e) {
       const target = e.target || e.srcElement
       const regex = new RegExp(this.className + '-([trmbl]{2})', '')
-      console.log('deselect...',  !this.$el.contains(target),  !regex.test(target.className) && !this._checkIsCanCancel(target))
       if (!this.$el.contains(target) && !regex.test(target.className) && !this._checkIsCanCancel(target)) {
         if (!this.preventDeactivation) {
           this.enabled = false
@@ -500,22 +498,21 @@ export default {
       this.checkParentSize()
       var target = target || e.target || e.srcElement
       if (this.$el.contains(target)) {
-        // if (this.onDragStart && this.onDragStart(e) === false) {
-        //   return
-        // }
-        // if (
-        //   (this.dragHandle && !matchesSelectorToParentElements(target, this.dragHandle, this.$el)) ||
-        //   (this.dragCancel && matchesSelectorToParentElements(target, this.dragCancel, this.$el))
-        // ) {
-        //   return
-        // }
+        if (this.onDragStart && this.onDragStart(e) === false) {
+          return
+        }
+        if (
+          (this.dragHandle && !matchesSelectorToParentElements(target, this.dragHandle, this.$el)) ||
+          (this.dragCancel && matchesSelectorToParentElements(target, this.dragCancel, this.$el))
+        ) {
+          return
+        }
         if (!this.enabled) {
           this.enabled = true
           this.$emit('activated')
           this.$emit('update:active', true)
         }
         if (this.draggable) {
-          console.log('..............走这里了............', this.draggable)
           this.dragging = true
         }
         this.mouseClickPosition.mouseX = e.touches ? e.touches[0].pageX : e.pageX
@@ -586,7 +583,6 @@ export default {
       this.allElemtY = this._getElemtSTL(document.querySelector('.' + this.parent))[1]
     },
     move (e) {
-      console.log('move..........', this.dragging)
       e.preventDefault()
       if (this.resizing) {
         this.handleMove(e)
@@ -599,7 +595,6 @@ export default {
       }
     },
     elementMove (e) { // 元素移动发生的事情
-        console.log('elementMove..........', this.dragging)
         const axis = this.axis
         const grid = this.grid
         const mouseClickPosition = this.mouseClickPosition
@@ -683,7 +678,6 @@ export default {
     },
 
     handleUp (e) { // 所有的鼠标抬起都会走这里
-      console.log('handleUp鼠标抬起了', 'dragging:'+this.dragging)
       this.handle = null
       this.rawTop = this.top
       this.rawBottom = this.bottom
@@ -695,7 +689,6 @@ export default {
       }
       if (this.dragging) {
         this.dragging = false
-        console.log('handleUp鼠标抬起了结束了', 'dragging:'+this.dragging)
         this.$emit('dragstop', this.left, this.top)
       }
       if (this.rotateing) {
