@@ -9,11 +9,13 @@
           :w="w"
           :h="h"
           :r="r"
-          :isCanDragSelect="true"
+          :isCanDragSelect="false"
           :isRotate="isRotate"
           parent="fathter"
           scrollFathter = 'scrollFathter'
           :debug="true"
+          :isCanDirMove="true"
+          :grid="[1,1]"
           :preventDeactivation = "preventDeactivation"
           @dragging = "onDragging"
           @dragstop = "onDragstop"
@@ -22,6 +24,8 @@
           @rotateing = "onRotateing"
           @dragSelecting = "onDragSelecting"
           @deactivated = "onDeactivated"
+          @dirmoveing = "onDirmoveing"
+          @dirmoveup = "onDirmoveup"
         >
           <!--<div>默认位置</div>-->
         </vue-draggable-resizable>
@@ -30,19 +34,20 @@
             class="componentItem  n_active"
             :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)',zIndex: item.css.z}"
             :class="{componentItem_border: item.isSelect}"
-            @mousedown.stop.prevent="componentItemHandle($event, index)"
+            @mousedown.stop="componentItemHandle($event, index)"
           >我是元素{{index}}
           </div>
         </div>
       </div>
       <ul class="ss-ul-box n_active" @mousedown.stop>
-        <li @mousedown.stop.prevent="onPositonHandle($event, 'verticalcenter')" class="n_active">垂直居中</li>
-        <li @mousedown.stop.prevent="onPositonHandle($event, 'horizontalcenter')"  class="">水平居中</li>
+        <li @mousedown.stop="onPositonHandle($event, 'verticalcenter')" class="n_active">垂直居中</li>
+        <li @mousedown.stop="onPositonHandle($event, 'horizontalcenter')"  class="">水平居中</li>
         <li @mousedown.stop.prevent="onPositonHandle($event, 'left')" class="">左</li>
         <li @mousedown.stop.prevent="onPositonHandle($event, 'top')" class="">上</li>
         <li @mousedown.stop.prevent="onPositonHandle($event, 'right')" class="">右</li>
         <li @mousedown.stop.prevent="onPositonHandle($event, 'bottom')"class="">下</li>
       </ul>
+      <input type="text"  placeholder="请输入文字.." />
     </div>
   </div>
 </template>
@@ -98,6 +103,8 @@ export default {
     }
   },
   mounted () {
+      document.onkeydown = function(event){
+      }
     this._calculateXYWH(true) // 计算x, y, w, h
   },
   computed: {
@@ -171,13 +178,28 @@ export default {
       var lsComponentList = _.cloneDeep(this.lsComponentList)
       for (let v of lsComponentList) {
         if (v.isSelect) { // 被选中才移动
-          v.css.x = Math.floor(left + v.cx)
-          v.css.y = Math.floor(top + v.cy)
+          v.css.x = Math.round(left + v.cx)
+          v.css.y = Math.round(top + v.cy)
         }
       }
       this.lsComponentList = lsComponentList
       this.x = left
       this.y = top
+    },
+    onDirmoveing (left, top) { // 上下左右方向键
+      var lsComponentList = _.cloneDeep(this.lsComponentList)
+      for (let v of lsComponentList) {
+        if (v.isSelect) { // 被选中才移动
+          v.css.x = Math.round(left + v.cx)
+          v.css.y = Math.round(top + v.cy)
+        }
+      }
+      this.lsComponentList = lsComponentList
+      this.x = left
+      this.y = top
+    },
+    onDirmoveup(){
+      console.log('鼠标抬起...')
     },
     onDragstop (left, top) { // 拖拽停止发生的事情
       this.maxLeft = left
@@ -187,10 +209,10 @@ export default {
       var lsComponentList = _.cloneDeep(this.lsComponentList)
       for (let v of lsComponentList) {
         if (v.isSelect) { // 被选中才移动
-          v.css.x = Math.floor(width * v.pidX + this.x)
-          v.css.y = Math.floor(height * v.pidY + this.y)
-          v.css.width = Math.floor(width * v.pidW)
-          v.css.height = Math.floor(height * v.pidH)
+          v.css.x = Math.round(width * v.pidX + this.x)
+          v.css.y = Math.round(height * v.pidY + this.y)
+          v.css.width = Math.round(width * v.pidW)
+          v.css.height = Math.round(height * v.pidH)
         }
       }
       this.lsComponentList = lsComponentList

@@ -84,8 +84,9 @@ export default {
       type: Boolean,
       default: false
     },
-    scrollFathter: { // 滚动父级
-
+    isCanDirMove: { // 上下左右键移动的时候是否可以移动元素
+      type: Boolean,
+      default: true
     },
     debug: {
       type: Boolean,
@@ -147,7 +148,7 @@ export default {
       type: Boolean,
       default: true
     },
-    lockAspectRatio: { // 是否锁住长宽
+    lockAspectRatio: { // 是否锁住长宽比例了
       type: Boolean,
       default: false
     },
@@ -293,6 +294,8 @@ export default {
     addEvent(document.documentElement, 'mousedown', this.dragSelectDown) // 拖拽选择元素
     addEvent(document.documentElement, 'touchend touchcancel', this.deselect)
     addEvent(window, 'resize', this.checkParentSize)
+    addEvent(document.documentElement, 'keydown', this.keyDown)
+
   },
   beforeDestroy: function () {
     removeEvent(document.documentElement, 'mousedown', this.deselect)
@@ -305,6 +308,49 @@ export default {
   },
 
   methods: {
+    keyUp(event){
+      var event = event||window.event
+      this.$emit('dirmoveup', this.left, this.top)
+    },
+    keyDown(event){
+      var event = event||window.event
+      if(this.isCanDirMove && event.target.tagName !== 'INPUT' &&  this.w){
+        event.preventDefault()// 阻止浏览器默认事件
+        this.bounds = this.calcResizeLimits()
+        const bounds = this.bounds
+        const grid = this.grid
+        switch(event.keyCode){
+          case 37: // 左
+            this.rawLeft = this.left-grid[0]
+            if (bounds.minLeft !== null && this.rawLeft>bounds.minLeft){
+              this.rawRight = this.right+grid[0]
+            }
+            break;
+          case 38: // 上
+            this.rawTop = this.top-grid[1]
+            if (bounds.minTop !== null && this.rawTop>bounds.minTop){
+              this.rawBottom = this.bottom+grid[1]
+            }
+            break;
+          case 39: // 右
+            this.rawRight = this.right - grid[0]
+            if (bounds.minRight !== null && this.rawRight>bounds.minRight){
+              this.rawLeft = this.left+grid[0]
+            }
+            break;
+          case 40: // 下
+            this.rawBottom = this.bottom-grid[1]
+            if (bounds.minBottom !== null && this.rawBottom>bounds.minBottom){
+              this.rawTop = this.top+grid[1]
+            }
+            break;
+        }
+        setTimeout(()=>{
+          this.$emit('dirmoveing', this.left, this.top)
+        }, 5)
+        addEvent(document.documentElement, 'keyup', this.keyUp)
+      }
+    }, //上下左右移动元素
     resetBoundsAndMouseState () {
       this.mouseClickPosition = { mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0, o: [0, 0], m: [0, 0], s: [0, 0], e: [0, 0] }
       this.bounds = {
@@ -361,7 +407,6 @@ export default {
     },
 
     _getElemtSTL (e) { // 获取祖先的滚动x轴和y值 (递归)
-
       var x = e.scrollLeft || 0
       var y = e.scrollTop|| 0
       if (e.parentNode) {
@@ -565,8 +610,6 @@ export default {
       if (this.onResizeStart && this.onResizeStart(handle, e) === false) {
         return
       }
-
-
       this.mouseClickPosition.s[0] = e.pageX
       this.mouseClickPosition.s[1] = e.pageY
       let s_x = this.mouseClickPosition.s[0]
@@ -583,7 +626,6 @@ export default {
       this.allElemtY = this._getElemtSTL(document.querySelector('.' + this.parent))[1]
     },
     move (e) {
-      e.preventDefault()
       if (this.resizing) {
         this.handleMove(e)
       } else if (this.dragging) {
@@ -759,10 +801,10 @@ export default {
       if (!this.resizable) return []
       return this.handles
     },
-    width () {
+    width()   {
       return this.parentWidth - this.left - this.right
     },
-    height () {
+    height() {
       return this.parentHeight - this.top - this.bottom
     },
     resizingOnX () { // 是否是中间横向的拉伸或者缩放
@@ -803,7 +845,6 @@ export default {
       if (lockAspectRatio && this.resizingOnX) {
         this.rawTop = top - (left - newLeft) / aspectFactor
       }
-
       this.left = newLeft
     },
     rawRight (newRight) {
@@ -833,7 +874,7 @@ export default {
       } else if (bounds.maxTop !== null && bounds.maxTop < newTop) {
         newTop = bounds.maxTop
       }
-      if (lockAspectRatio && this.resizingOnY) {
+      if (lockAspectRatio && this.resizingOnY) { // 长宽比被锁定了
         this.rawLeft = left - (top - newTop) * aspectFactor
       }
       this.top = newTop
@@ -849,7 +890,7 @@ export default {
       } else if (bounds.maxBottom !== null && bounds.maxBottom < newBottom) {
         newBottom = bounds.maxBottom
       }
-      if (lockAspectRatio && this.resizingOnY) {
+      if (lockAspectRatio && this.resizingOnY) { // 长宽被锁定了
         this.rawRight = right - (bottom - newBottom) * aspectFactor
       }
       this.bottom = newBottom
