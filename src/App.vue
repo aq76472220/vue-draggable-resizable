@@ -34,7 +34,7 @@
             class="componentItem  n_active"
             :style="{top: item.css.y+'px', left: item.css.x+'px', width:item.css.width+'px', height:item.css.height+'px',transform:'rotate('+ item.css.r +'deg)',zIndex: item.css.z}"
             :class="{componentItem_border: item.isSelect}"
-            @mousedown.stop="componentItemHandle($event, index)"
+            @mousedown.stop.prevent="componentItemHandle($event, index)"
           >我是元素{{index}}
           </div>
         </div>
