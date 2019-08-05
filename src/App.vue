@@ -1,5 +1,7 @@
 <template>
   <div style="height:600px; width: 600px; margin-left: 100px; margin-top: 120px; overflow: auto" class="scrollFathter">
+
+    <div contenteditable="true">sasas</div>
     <div  style="height:800px; width: 800px;" class="cancelSelected">
       <div class="fathter" style="height: 400px; width: 400px; border: 1px solid red; position: relative;">
         <vue-draggable-resizable

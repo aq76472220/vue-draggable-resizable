@@ -315,7 +315,7 @@ export default {
     keyDown(event){
       var event = event||window.event
       if(this.isCanDirMove && event.target.tagName !== 'INPUT' &&  this.w){
-        event.preventDefault()// 阻止浏览器默认事件
+        // event.preventDefault()// 阻止浏览器默认事件
         this.bounds = this.calcResizeLimits()
         const bounds = this.bounds
         const grid = this.grid
