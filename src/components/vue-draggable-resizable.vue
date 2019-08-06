@@ -314,31 +314,34 @@ export default {
     },
     keyDown(event){
       var event = event||window.event
-      if(this.isCanDirMove && event.target.tagName !== 'INPUT' &&  this.w){
-        // event.preventDefault()// 阻止浏览器默认事件
+      if(this.isCanDirMove && event.target.tagName !== 'INPUT' &&  this.w && event.target.contentEditable !== 'true'){
         this.bounds = this.calcResizeLimits()
         const bounds = this.bounds
         const grid = this.grid
         switch(event.keyCode){
           case 37: // 左
+            event.preventDefault()// 阻止浏览器默认事件
             this.rawLeft = this.left-grid[0]
             if (bounds.minLeft !== null && this.rawLeft>bounds.minLeft){
               this.rawRight = this.right+grid[0]
             }
             break;
           case 38: // 上
+            event.preventDefault()// 阻止浏览器默认事件
             this.rawTop = this.top-grid[1]
             if (bounds.minTop !== null && this.rawTop>bounds.minTop){
               this.rawBottom = this.bottom+grid[1]
             }
             break;
           case 39: // 右
+            event.preventDefault()// 阻止浏览器默认事件
             this.rawRight = this.right - grid[0]
             if (bounds.minRight !== null && this.rawRight>bounds.minRight){
               this.rawLeft = this.left+grid[0]
             }
             break;
           case 40: // 下
+            event.preventDefault()// 阻止浏览器默认事件
             this.rawBottom = this.bottom-grid[1]
             if (bounds.minBottom !== null && this.rawBottom>bounds.minBottom){
               this.rawTop = this.top+grid[1]

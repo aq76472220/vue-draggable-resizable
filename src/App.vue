@@ -1,7 +1,18 @@
 <template>
   <div style="height:600px; width: 600px; margin-left: 100px; margin-top: 120px; overflow: auto" class="scrollFathter">
 
-    <div contenteditable="true">sasas</div>
+
+
+    <!--编辑文本框-->
+    <div
+        class="absolute textsFocus isEditor"
+        contenteditable="true"
+        @input= "onInputHandle"
+    >
+      1.1.8
+    </div>
+    
+    
     <div  style="height:800px; width: 800px;" class="cancelSelected">
       <div class="fathter" style="height: 400px; width: 400px; border: 1px solid red; position: relative;">
         <vue-draggable-resizable
@@ -29,7 +40,6 @@
           @dirmoveing = "onDirmoveing"
           @dirmoveup = "onDirmoveup"
         >
-          <!--<div>默认位置</div>-->
         </vue-draggable-resizable>
         <div v-for="(item, index) in lsComponentList"  class="componentItem_box">
           <div
@@ -119,6 +129,11 @@ export default {
 
   },
   methods: {
+    onInputHandle(e){
+      let selection = window.getSelection();
+      let range = selection.getRangeAt(0);
+      console.log(range, '...拖蓝...')
+    },
     onDeactivated (e) { // 点击document发生的事情
       var target = e.target || e.srcElement
       var regex = new RegExp('cancelSelected')
@@ -136,8 +151,6 @@ export default {
           this.isRotate = false
         }
       }
-      console.log(e.target)
-
     },
     _calculateXYWH (isAlign = false) { // 计算x, y, w, h  isAlign 是否走的是对其的
       var _arrX = []
@@ -201,7 +214,7 @@ export default {
       this.y = top
     },
     onDirmoveup(){
-      console.log('鼠标抬起...')
+      console.log('...上下左右...')
     },
     onDragstop (left, top) { // 拖拽停止发生的事情
       this.maxLeft = left
@@ -258,6 +271,7 @@ export default {
       this.lsComponentList = lsComponentList
     },
     onDragSelecting (s, m) { // 拖拽选框发生的事情 s:开始位置， m移动的位置
+      console.log(s, m, '...位置变动...')
       let lsComponentList = this.lsComponentList
       let mousePosition = []
       mousePosition[0] = s
