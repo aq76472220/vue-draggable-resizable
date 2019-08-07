@@ -22,7 +22,7 @@
           :w="w"
           :h="h"
           :r="r"
-          :isCanDragSelect="false"
+          :isCanDragSelect="true"
           :isRotate="isRotate"
           parent="fathter"
           scrollFathter = 'scrollFathter'
@@ -135,6 +135,7 @@ export default {
       console.log(range, '...拖蓝...')
     },
     onDeactivated (e) { // 点击document发生的事情
+      console.log(e, '点击了document')
       var target = e.target || e.srcElement
       var regex = new RegExp('cancelSelected')
       if (regex.test(target.className)){

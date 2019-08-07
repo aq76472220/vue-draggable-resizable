@@ -618,13 +618,13 @@ export default {
       let s_x = this.mouseClickPosition.s[0]
       let s_y = this.mouseClickPosition.s[1]
       setTimeout(() => {
-        if ((s_x < this.left && s_y < this.top && !this.resizing && !this.rotateing && this.isCanDragSelect && !this.enabled) || (s_x > (this.left + this.width) && (s_y > (this.top + this.height)) && !this.resizing && !this.rotateing && this.isCanDragSelect && !this.enabled)) {
+        if ((s_x < this.left && s_y < this.top && !this.resizing && !this.rotateing && this.isCanDragSelect && !this.enabled) || (s_x > (this.left + this.width) && (s_y > (this.top + this.height)) && !this.resizing && !this.rotateing && this.isCanDragSelect && !this.enabled)) { // 不在点击元素的范围内
           if (e.stopPropagation) e.stopPropagation()
           this.dragSelecting = true
           addEvent(document.documentElement, eventsFor.move, this.dragSelectMove)
           addEvent(document.documentElement, eventsFor.stop, this.handleUp)
         }
-      }, 20)
+      }, 80)
       this.allElemtX = this._getElemtSTL(document.querySelector('.' + this.parent))[0]
       this.allElemtY = this._getElemtSTL(document.querySelector('.' + this.parent))[1]
     },
@@ -696,7 +696,7 @@ export default {
       }
       this.$emit('rotateing', this.rotate)
     },
-    dragSelectMove (e) {
+    dragSelectMove (e) { // 拖拽选框发生的事情
       e.preventDefault()
       this.mouseClickPosition.m[0] = e.pageX // 移动点的x值
       this.mouseClickPosition.m[1] = e.pageY // 移动点的y值
