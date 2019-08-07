@@ -1,8 +1,6 @@
 <template>
-  <div style="height:600px; width: 600px; margin-left: 100px; margin-top: 120px; overflow: auto" class="scrollFathter">
-
-
-
+  <div style="height:1000px; width: 1000px; margin-left: 100px;overflow: auto;" class="scrollFathter">
+ 
     <!--编辑文本框-->
     <div
         class="absolute textsFocus isEditor"
@@ -13,8 +11,8 @@
     </div>
     
     
-    <div  style="height:800px; width: 800px;" class="cancelSelected">
-      <div class="fathter" style="height: 400px; width: 400px; border: 1px solid red; position: relative;">
+    <div  style="height:1200px; width: 1200px; margin-top:400px;" class="cancelSelected">
+      <div class="fathter cancelSelected" style="height: 400px; width: 400px; border: 1px solid red; position: relative;">
         <vue-draggable-resizable
           ref = 'resizable'
           :x="x"
@@ -51,15 +49,15 @@
           </div>
         </div>
       </div>
-      <ul class="ss-ul-box n_active" @mousedown.stop>
-        <li @mousedown.stop="onPositonHandle($event, 'verticalcenter')" class="n_active">垂直居中</li>
-        <li @mousedown.stop="onPositonHandle($event, 'horizontalcenter')"  class="">水平居中</li>
-        <li @mousedown.stop.prevent="onPositonHandle($event, 'left')" class="">左</li>
-        <li @mousedown.stop.prevent="onPositonHandle($event, 'top')" class="">上</li>
-        <li @mousedown.stop.prevent="onPositonHandle($event, 'right')" class="">右</li>
-        <li @mousedown.stop.prevent="onPositonHandle($event, 'bottom')"class="">下</li>
-      </ul>
-      <input type="text"  placeholder="请输入文字.." />
+      <!--<ul class="ss-ul-box n_active" @mousedown.stop>-->
+        <!--<li @mousedown.stop="onPositonHandle($event, 'verticalcenter')" class="n_active">垂直居中</li>-->
+        <!--<li @mousedown.stop="onPositonHandle($event, 'horizontalcenter')"  class="">水平居中</li>-->
+        <!--<li @mousedown.stop.prevent="onPositonHandle($event, 'left')" class="">左</li>-->
+        <!--<li @mousedown.stop.prevent="onPositonHandle($event, 'top')" class="">上</li>-->
+        <!--<li @mousedown.stop.prevent="onPositonHandle($event, 'right')" class="">右</li>-->
+        <!--<li @mousedown.stop.prevent="onPositonHandle($event, 'bottom')"class="">下</li>-->
+      <!--</ul>-->
+      <!--<input type="text"  placeholder="请输入文字.." />-->
     </div>
   </div>
 </template>
@@ -135,7 +133,7 @@ export default {
       console.log(range, '...拖蓝...')
     },
     onDeactivated (e) { // 点击document发生的事情
-      console.log(e, '点击了document')
+      console.log(e.target, '点击了document')
       var target = e.target || e.srcElement
       var regex = new RegExp('cancelSelected')
       if (regex.test(target.className)){

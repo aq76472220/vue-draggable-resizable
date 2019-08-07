@@ -263,7 +263,7 @@ export default {
       minH: this.minHeight,
       maxW: this.maxWidth,
       maxH: this.maxHeight,
-      handle: null,
+      handle: null, // 鼠标的所有手柄点
       enabled: this.active, // 是否出现手柄
       resizing: false, // 正在放大缩小中
       dragging: false, // 正在拖拽中
@@ -615,16 +615,16 @@ export default {
       }
       this.mouseClickPosition.s[0] = e.pageX
       this.mouseClickPosition.s[1] = e.pageY
-      let s_x = this.mouseClickPosition.s[0]
-      let s_y = this.mouseClickPosition.s[1]
+      let s_x = this.mouseClickPosition.s[0] // 鼠标的x轴
+      let s_y = this.mouseClickPosition.s[1] // 鼠标的y轴
       setTimeout(() => {
-        if ((s_x < this.left && s_y < this.top && !this.resizing && !this.rotateing && this.isCanDragSelect && !this.enabled) || (s_x > (this.left + this.width) && (s_y > (this.top + this.height)) && !this.resizing && !this.rotateing && this.isCanDragSelect && !this.enabled)) { // 不在点击元素的范围内
+        if (!this.resizing && !this.rotateing && this.isCanDragSelect && !this.enabled) { // 判断是否可拖拽
           if (e.stopPropagation) e.stopPropagation()
           this.dragSelecting = true
           addEvent(document.documentElement, eventsFor.move, this.dragSelectMove)
           addEvent(document.documentElement, eventsFor.stop, this.handleUp)
         }
-      }, 80)
+      }, 0)
       this.allElemtX = this._getElemtSTL(document.querySelector('.' + this.parent))[0]
       this.allElemtY = this._getElemtSTL(document.querySelector('.' + this.parent))[1]
     },
