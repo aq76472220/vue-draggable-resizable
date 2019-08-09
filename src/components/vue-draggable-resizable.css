@@ -10,7 +10,7 @@
 .ss-handle-bl {bottom:-4px!important;left:-4px!important;cursor:sw-resize;}
 .ss-handle-bm {bottom:-4px!important;left:50%;margin-left:-4px!important;cursor:s-resize;}
 .ss-handle-br {bottom:-4px!important;right:-4px!important;cursor:se-resize;}
-.ss-dragSelect-box {position: fixed; background: rgba(38, 168, 255, 0.1); border: 1px solid rgb(30, 152, 234) }
+.ss-dragSelect-box {position: fixed; background: rgba(38, 168, 255, 0.1); border: 1px solid rgb(30, 152, 234); z-index:0 }
 .handle-rotate { left: 50%; width: 14px; height: 14px; margin-left: -7px;position: absolute; top:-24px; cursor: pointer}
 @media only screen and (max-width:768px) {[class*="handle-"]:before {content:'';left:-4px!important;right:-4px!important;bottom:-4px!important;top:-4px!important;position:absolute;}
 }

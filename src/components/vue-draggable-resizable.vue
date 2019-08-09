@@ -34,6 +34,8 @@
       <!--默认插槽-->
       <slot></slot>
     </div>
+    
+    <!--选择区域-->
     <div
       :style="dragSelectStyle"
       v-if="dragSelecting"
@@ -269,6 +271,7 @@ export default {
       dragging: false, // 正在拖拽中
       rotateing: false, // 正在旋转中
       dragSelecting: false, // 正在拖拽选择框选元素
+      keyUping: false, // 是否在上下左右中移动
       zIndex: this.z,
       dragSelectDate: { left: 0, top: 0, width: 0, height: 0 }, // 拖拽选择框的大小
       allElemtX: 0, // 元素的x滚动距离
@@ -310,47 +313,73 @@ export default {
   methods: {
     keyUp(event){
       var event = event||window.event
+      this.keyUping = false
       this.$emit('dirmoveup', this.left, this.top)
     },
     keyDown(event){
       var event = event||window.event
       if(this.isCanDirMove && event.target.tagName !== 'INPUT' &&  this.w && event.target.contentEditable !== 'true'){
-        this.bounds = this.calcResizeLimits()
-        const bounds = this.bounds
-        const grid = this.grid
+        this.keyUping = true
+        
+        var grid =[]
+        event.shiftKey ? grid = [10, 10] : grid = this.grid
         switch(event.keyCode){
           case 37: // 左
+            var bounds = this.bounds
+            this.bounds = this.calcResizeLimits()
             event.preventDefault()// 阻止浏览器默认事件
             this.rawLeft = this.left-grid[0]
-            if (bounds.minLeft !== null && this.rawLeft>bounds.minLeft){
+            if(this.rawLeft<0){
+              this.rawRight = this.parentWidth-this.width
+              return
+            }
+            if (bounds.minLeft !== null && this.rawLeft>=bounds.minLeft){
               this.rawRight = this.right+grid[0]
             }
             break;
           case 38: // 上
+            var bounds = this.bounds
+            this.bounds = this.calcResizeLimits()
             event.preventDefault()// 阻止浏览器默认事件
             this.rawTop = this.top-grid[1]
-            if (bounds.minTop !== null && this.rawTop>bounds.minTop){
+            if(this.rawTop<0){
+              this.rawBottom = this.parentHeight - this.height
+              return
+            }
+            if (bounds.minTop !== null && this.rawTop>=bounds.minTop){
               this.rawBottom = this.bottom+grid[1]
             }
             break;
           case 39: // 右
+            var bounds = this.bounds
+            this.bounds = this.calcResizeLimits()
             event.preventDefault()// 阻止浏览器默认事件
             this.rawRight = this.right - grid[0]
-            if (bounds.minRight !== null && this.rawRight>bounds.minRight){
+            if(this.rawRight<0){
+              this.rawLeft = this.parentWidth-this.width
+              return
+            }
+            if (bounds.minRight !== null && this.rawRight>=bounds.minRight){
               this.rawLeft = this.left+grid[0]
             }
             break;
           case 40: // 下
+            var bounds = this.bounds
+            this.bounds = this.calcResizeLimits()
             event.preventDefault()// 阻止浏览器默认事件
             this.rawBottom = this.bottom-grid[1]
-            if (bounds.minBottom !== null && this.rawBottom>bounds.minBottom){
+            if(this.rawBottom<0){
+              this.rawTop = this.parentHeight-this.height
+              return
+            }
+            if (bounds.minBottom !== null && this.rawBottom>=bounds.minBottom){
               this.rawTop = this.top+grid[1]
             }
             break;
         }
-        setTimeout(()=>{
+        setTimeout(()=>{ // 延迟
           this.$emit('dirmoveing', this.left, this.top)
-        }, 5)
+        }, 0)
         addEvent(document.documentElement, 'keyup', this.keyUp)
       }
     }, //上下左右移动元素
@@ -367,13 +396,13 @@ export default {
         maxBottom: null
       }
     },
-    checkParentSize () {
+    checkParentSize () { // 重置父级信息
       if (this.parent) {
         const [newParentWidth, newParentHeight, newParentLeft, newParentTop] = this.getParentSize()
         const deltaX = this.parentWidth - newParentWidth
         const deltaY = this.parentHeight - newParentHeight
         this.rawRight -= deltaX
-        this.rawBottom -= deltaY
+        // this.rawBottom -= deltaY
         this.parentWidth = newParentWidth
         this.parentHeight = newParentHeight
         this.parentLeft = newParentLeft
@@ -398,7 +427,8 @@ export default {
       }
       return [null, null]
     },
-    _getAncestorLT (f) { // 获取祖先的left和top值 (递归)
+    _getAncestorLT (f) { // 获取祖先的left和top值 (递归) -- 追溯到最后一个定位（relative absolute等）
+      
       var _offsetLeft = f.offsetLeft
       var _offsetTop = f.offsetTop
       if (f.offsetParent) {
@@ -409,7 +439,7 @@ export default {
       return [_offsetLeft, _offsetTop]
     },
 
-    _getElemtSTL (e) { // 获取祖先的滚动x轴和y值 (递归)
+    _getElemtSTL (e) { // 获取祖先的滚动x轴和y值 (递归) -- 追溯到body
       var x = e.scrollLeft || 0
       var y = e.scrollTop|| 0
       if (e.parentNode) {
@@ -549,10 +579,7 @@ export default {
         if (this.onDragStart && this.onDragStart(e) === false) {
           return
         }
-        if (
-          (this.dragHandle && !matchesSelectorToParentElements(target, this.dragHandle, this.$el)) ||
-          (this.dragCancel && matchesSelectorToParentElements(target, this.dragCancel, this.$el))
-        ) {
+        if ((this.dragHandle && !matchesSelectorToParentElements(target, this.dragHandle, this.$el)) || (this.dragCancel && matchesSelectorToParentElements(target, this.dragCancel, this.$el))) {
           return
         }
         if (!this.enabled) {
@@ -603,9 +630,11 @@ export default {
         return
       }
       if (e.stopPropagation) e.stopPropagation()
+      this.allElemtX = this._getElemtSTL(document.querySelector('.' + this.parent))[0]
+      this.allElemtY = this._getElemtSTL(document.querySelector('.' + this.parent))[1]
       this.rotateing = true
-      this.mouseClickPosition.o[0] = this.left + this.width / 2 // 元素中心点的x值
-      this.mouseClickPosition.o[1] = this.top + this.height / 2 // 元素中心点的y值
+      this.mouseClickPosition.o[0] = this.left + this.width / 2 -this.allElemtX // 元素中心点的x值
+      this.mouseClickPosition.o[1] = this.top + this.height / 2 -this.allElemtY // 元素中心点的y值
       addEvent(document.documentElement, eventsFor.move, this.rotateMove)
       addEvent(document.documentElement, eventsFor.stop, this.handleUp)
     },
@@ -970,7 +999,6 @@ export default {
         this.bounds = this.calcResizeLimits()
       }
       const delta = this.height - this.h
-
       if (delta % this.grid[1] === 0) {
         this.rawBottom = this.bottom + delta
       }

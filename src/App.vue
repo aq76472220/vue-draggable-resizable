@@ -133,7 +133,6 @@ export default {
       console.log(range, '...拖蓝...')
     },
     onDeactivated (e) { // 点击document发生的事情
-      console.log(e.target, '点击了document')
       var target = e.target || e.srcElement
       var regex = new RegExp('cancelSelected')
       if (regex.test(target.className)){
@@ -188,6 +187,44 @@ export default {
       }
       this.lsComponentList = lsComponentList
     },
+    componentItemHandle (e, index) { // 点击某个元素发生的事情
+      this.$refs.resizable.checkParentSize() // mmp
+      var lsComponentList = this.lsComponentList
+      let num = 0
+      for (let v of lsComponentList) {
+        if (v.isSelect) {
+          num++
+        }
+      }
+      if (e.shiftKey) {
+        console.log(e.shiftKey)
+        if (lsComponentList[index].isSelect) {
+          lsComponentList[index].isSelect = 0
+        } else {
+          lsComponentList[index].isSelect = 1
+        }
+      } else {
+        if (!lsComponentList[index].isSelect) {
+          for (let v of lsComponentList) {
+            v.isSelect = 0
+          }
+          lsComponentList[index].isSelect = 1
+        }
+      }
+      this.lsComponentList = lsComponentList
+      this._calculateXYWH(true)
+      for (let v of lsComponentList) {
+        v.pidW = v.css.width / this.w
+        v.pidH = v.css.height / this.h
+        v.pidX = (v.css.x - this.x) / this.w
+        v.pidY = (v.css.y - this.y) / this.h
+      }
+      this.r = lsComponentList[index].css.r
+      setTimeout(()=>{ // 尼玛马到处是坑
+        this._calculateIsHasRotate() // 计算是否只有一个
+      },10)
+      this.$refs.resizable.elementDown(e, this.$refs.resizable.$el)
+    },
     onDragging (left, top) { // 拖拽移动的时候
       var lsComponentList = _.cloneDeep(this.lsComponentList)
       for (let v of lsComponentList) {
@@ -212,8 +249,17 @@ export default {
       this.x = left
       this.y = top
     },
-    onDirmoveup(){
-      console.log('...上下左右...')
+    onDirmoveup(left, top){
+      var lsComponentList = _.cloneDeep(this.lsComponentList)
+      for (let v of lsComponentList) {
+        if (v.isSelect) { // 被选中才移动
+          v.css.x = Math.round(left + v.cx)
+          v.css.y = Math.round(top + v.cy)
+        }
+      }
+      this.lsComponentList = lsComponentList
+      this.x = left
+      this.y = top
     },
     onDragstop (left, top) { // 拖拽停止发生的事情
       this.maxLeft = left
@@ -324,46 +370,6 @@ export default {
       let end = Math.max(area[0], area[1])// 结束为止
       return position >= start && position <= end
     },
-
-    componentItemHandle (e, index) { // 点击某个元素发生的事情
-      this.$refs.resizable.checkParentSize() // mmp
-      var lsComponentList = this.lsComponentList
-      let num = 0
-      for (let v of lsComponentList) {
-        if (v.isSelect) {
-          num++
-        }
-      }
-      if (e.shiftKey) {
-        console.log(e.shiftKey)
-        if (lsComponentList[index].isSelect) {
-          lsComponentList[index].isSelect = 0
-        } else {
-          lsComponentList[index].isSelect = 1
-        }
-      } else {
-        if (!lsComponentList[index].isSelect) {
-          for (let v of lsComponentList) {
-            v.isSelect = 0
-          }
-          lsComponentList[index].isSelect = 1
-        }
-      }
-      this.lsComponentList = lsComponentList
-      this._calculateXYWH(true)
-      for (let v of lsComponentList) {
-        v.pidW = v.css.width / this.w
-        v.pidH = v.css.height / this.h
-        v.pidX = (v.css.x - this.x) / this.w
-        v.pidY = (v.css.y - this.y) / this.h
-      }
-      this.r = lsComponentList[index].css.r
-      setTimeout(()=>{ // 尼玛马到处是坑
-        this._calculateIsHasRotate() // 计算是否只有一个
-      },10)
-      this.$refs.resizable.elementDown(e, this.$refs.resizable.$el)
-    },
-
     onPositonHandle (e, type) { // 元素对齐
       // this.preventDeactivation = true
       var lsComponentList = this.lsComponentList
