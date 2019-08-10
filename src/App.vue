@@ -12,7 +12,7 @@
     
     
     <div  style="height:1200px; width: 1200px; margin-top:400px;" class="cancelSelected">
-      <div class="fathter cancelSelected" style="height: 400px; width: 400px; border: 1px solid red; position: relative;">
+      <div class="fathter cancelSelected" style="height: 600px; width: 600px; border: 1px solid red; position: relative;">
         <vue-draggable-resizable
           ref = 'resizable'
           :x="x"
@@ -272,7 +272,7 @@ export default {
           v.css.x = Math.round(width * v.pidX + this.x)
           v.css.y = Math.round(height * v.pidY + this.y)
           v.css.width = Math.round(width * v.pidW)
-          v.css.height = Math.round(height * v.pidH)
+          // v.css.height = Math.round(height * v.pidH)
         }
       }
       this.lsComponentList = lsComponentList

@@ -275,7 +275,9 @@ export default {
       zIndex: this.z,
       dragSelectDate: { left: 0, top: 0, width: 0, height: 0 }, // 拖拽选择框的大小
       allElemtX: 0, // 元素的x滚动距离
-      allElemtY: 0// 元素的y滚动距离
+      allElemtY: 0, // 元素的y滚动距离
+      is_move_tb: true, // 摁住shift键的时候是否可以上下移动
+      is_move_lr: true, // 摁住shift键的时候是否可以左右移动
     }
   },
 
@@ -428,7 +430,6 @@ export default {
       return [null, null]
     },
     _getAncestorLT (f) { // 获取祖先的left和top值 (递归) -- 追溯到最后一个定位（relative absolute等）
-      
       var _offsetLeft = f.offsetLeft
       var _offsetTop = f.offsetTop
       if (f.offsetParent) {
@@ -438,7 +439,6 @@ export default {
       }
       return [_offsetLeft, _offsetTop]
     },
-
     _getElemtSTL (e) { // 获取祖先的滚动x轴和y值 (递归) -- 追溯到body
       var x = e.scrollLeft || 0
       var y = e.scrollTop|| 0
@@ -449,7 +449,6 @@ export default {
       }
       return [x, y]
     },
-
     calcDragLimits () { // 拖拽或者移动的时候的限制
       return {
         minLeft: (this.parentWidth + this.left) % this.grid[0],
@@ -676,16 +675,24 @@ export default {
         const tmpDeltaY = axis && axis !== 'x' ? mouseClickPosition.mouseY - (e.touches ? e.touches[0].pageY : e.pageY) : 0
         const [deltaX, deltaY] = this.snapToGrid(this.grid, tmpDeltaX, tmpDeltaY)
         if (!deltaX && !deltaY) return
-        this.rawTop = mouseClickPosition.top - deltaY
-        this.rawBottom = mouseClickPosition.bottom + deltaY
-        this.rawLeft = mouseClickPosition.left - deltaX
-        this.rawRight = mouseClickPosition.right + deltaX
-        setTimeout(() => { // 定时器解决这个问题奇葩
-          this.$emit('dragging', this.left, this.top)
-        }, 5)
+        if(e.shiftKey && Math.abs(tmpDeltaX)>2 && this.is_move_lr){
+          this.is_move_tb = false
+          this.rawLeft = mouseClickPosition.left - deltaX
+          this.rawRight = mouseClickPosition.right + deltaX
+        } else if (e.shiftKey && Math.abs(tmpDeltaY)>2 && this.is_move_tb){
+          this.is_move_lr = false
+          this.rawTop = mouseClickPosition.top - deltaY
+          this.rawBottom = mouseClickPosition.bottom + deltaY
+        }else if (this.is_move_tb && this.is_move_lr){
+          this.rawTop = mouseClickPosition.top - deltaY
+          this.rawBottom = mouseClickPosition.bottom + deltaY
+          this.rawLeft = mouseClickPosition.left - deltaX
+          this.rawRight = mouseClickPosition.right + deltaX
+        }
     },
     handleMove (e) { // 拖拽8个角发生的事情
       const handle = this.handle
+      console.log( handle, '???')
       const mouseClickPosition = this.mouseClickPosition
       const tmpDeltaX = mouseClickPosition.mouseX - (e.touches ? e.touches[0].pageX : e.pageX)
       const tmpDeltaY = mouseClickPosition.mouseY - (e.touches ? e.touches[0].pageY : e.pageY)
@@ -748,7 +755,7 @@ export default {
       dragSelectDate.width = Math.abs(m[0] - s[0])
       dragSelectDate.height = Math.abs(m[1] - s[1])
       this.dragSelectDate = dragSelectDate
-      this.$emit('dragSelecting', [s[0] - this.parentLeft+this.allElemtX, s[1]- this.parentTop+this.allElemtY], [m[0] - this.parentLeft+this.allElemtX, m[1] - this.parentTop+this.allElemtY])
+      this.$emit('dragSelecting', [s[0] - this.parentLeft+this.allElemtX, s[1]- this.parentTop+this.allElemtY], [m[0] - this.parentLeft+this.allElemtX, m[1] - this.parentTop+this.allElemtY], e)
     },
 
     handleUp (e) { // 所有的鼠标抬起都会走这里
@@ -763,6 +770,8 @@ export default {
       }
       if (this.dragging) {
         this.dragging = false
+        this.is_move_lr = true
+        this.is_move_tb = true
         this.$emit('dragstop', this.left, this.top)
       }
       if (this.rotateing) {
@@ -874,10 +883,21 @@ export default {
       } else if (bounds.maxLeft !== null && bounds.maxLeft < newLeft) {
         newLeft = bounds.maxLeft
       }
-      if (lockAspectRatio && this.resizingOnX) {
+      if (lockAspectRatio && this.resizingOnX) { // 是否是横向的拉伸或者收缩
         this.rawTop = top - (left - newLeft) / aspectFactor
       }
       this.left = newLeft
+
+      if (this.resizing) {
+
+      } else if (this.dragging) {
+        this.$emit('dragging', newLeft, this.top)
+      } else if (this.rotateing) {
+
+      } else if (this.dragSelecting) {
+
+      }
+      
     },
     rawRight (newRight) {
       const bounds = this.bounds
@@ -890,7 +910,7 @@ export default {
       } else if (bounds.maxRight !== null && bounds.maxRight < newRight) {
         newRight = bounds.maxRight
       }
-      if (lockAspectRatio && this.resizingOnX) {
+      if (lockAspectRatio && this.resizingOnX) { // 是否是横向的拉伸或者收缩
         this.rawBottom = bottom - (right - newRight) / aspectFactor
       }
       this.right = newRight
@@ -906,10 +926,19 @@ export default {
       } else if (bounds.maxTop !== null && bounds.maxTop < newTop) {
         newTop = bounds.maxTop
       }
-      if (lockAspectRatio && this.resizingOnY) { // 长宽比被锁定了
+      if (lockAspectRatio && this.resizingOnY) { // 是否是纵向的拉伸或者收缩
         this.rawLeft = left - (top - newTop) * aspectFactor
       }
       this.top = newTop
+      if (this.resizing) {
+      
+      } else if (this.dragging) {
+        this.$emit('dragging', this.left, newTop)
+      } else if (this.rotateing) {
+      
+      } else if (this.dragSelecting) {
+      
+      }
     },
     rawBottom (newBottom) {
       const bounds = this.bounds
@@ -922,7 +951,7 @@ export default {
       } else if (bounds.maxBottom !== null && bounds.maxBottom < newBottom) {
         newBottom = bounds.maxBottom
       }
-      if (lockAspectRatio && this.resizingOnY) { // 长宽被锁定了
+      if (lockAspectRatio && this.resizingOnY) { // 是否是纵向的拉伸或者收缩
         this.rawRight = right - (bottom - newBottom) * aspectFactor
       }
       this.bottom = newBottom
