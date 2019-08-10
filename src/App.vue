@@ -266,13 +266,13 @@ export default {
       this.maxTop = top
     },
     onResizing (left, top, width, height) { // 放大缩小的时候
-      var lsComponentList = _.cloneDeep(this.lsComponentList)
+      var lsComponentList = this.lsComponentList
       for (let v of lsComponentList) {
         if (v.isSelect) { // 被选中才移动
           v.css.x = Math.round(width * v.pidX + this.x)
           v.css.y = Math.round(height * v.pidY + this.y)
           v.css.width = Math.round(width * v.pidW)
-          // v.css.height = Math.round(height * v.pidH)
+          v.css.height = Math.round(height * v.pidH)
         }
       }
       this.lsComponentList = lsComponentList

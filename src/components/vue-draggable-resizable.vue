@@ -232,11 +232,11 @@ export default {
       type: [Boolean, String],
       default: false
     },
-    onDragStart: {
+    onDragStart: { // 开始拖动事件
       type: Function,
       default: null
     },
-    onResizeStart: {
+    onResizeStart: { // 开始放大缩小事件
       type: Function,
       default: null
     }
@@ -244,18 +244,18 @@ export default {
 
   data: function () {
     return {
-      mouseClickPosition: null,
+      mouseClickPosition: null, // 鼠标点击相关
       rawWidth: this.w,
       rawHeight: this.h,
       rawLeft: this.x,
       rawTop: this.y,
       rawRight: null,
       rawBottom: null,
-      left: this.x,
-      top: this.y,
-      rotate: this.r,
-      right: null,
-      bottom: null,
+      left: this.x, // left 位置
+      top: this.y, // top位置
+      rotate: this.r, // 旋转角度
+      right: null, // 右边
+      bottom: null,  // 底部
       aspectFactor: this.w / this.h, // 宽度和长度比例关系
       parentWidth: null, // 父级元素的宽度
       parentHeight: null, // 父级元素的高度
@@ -272,7 +272,7 @@ export default {
       rotateing: false, // 正在旋转中
       dragSelecting: false, // 正在拖拽选择框选元素
       keyUping: false, // 是否在上下左右中移动
-      zIndex: this.z,
+      zIndex: this.z, //层级
       dragSelectDate: { left: 0, top: 0, width: 0, height: 0 }, // 拖拽选择框的大小
       allElemtX: 0, // 元素的x滚动距离
       allElemtY: 0, // 元素的y滚动距离
